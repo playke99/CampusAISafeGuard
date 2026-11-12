@@ -40,7 +40,7 @@ DEFAULTS: dict[str, Any] = {
             "blue": ["security_staff"],
         },
     },
-    "campus_ai": {"config_path": "campus_config.json"},
+    "campus_ai": {"config_path": "config/campus_config.json"},
 }
 
 

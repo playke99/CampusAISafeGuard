@@ -1,7 +1,7 @@
 """seat_monitor 服务入口
 
 用法(conda yolo 环境):
-    python -m seat_monitor.main                 # 使用默认 settings.json
+    python -m seat_monitor.main                 # 使用默认 seat_monitor/settings.json
     python -m seat_monitor.main --config path   # 指定配置
 
 视频源(settings.source): "0"=本机摄像头 / "rtsp://..."=网络摄像头 / "*.mp4"=本地文件

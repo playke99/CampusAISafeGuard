@@ -90,7 +90,7 @@ def resolve_path(value: str | None) -> str:
 def load_config(path: str | None = None) -> dict[str, Any]:
     """加载配置：深拷贝默认值后合并，调用方修改不会污染全局 DEFAULTS。"""
     base = copy.deepcopy(DEFAULTS)
-    cfg_path = Path(path) if path else PROJECT_ROOT / "campus_config.json"
+    cfg_path = Path(path) if path else PROJECT_ROOT / "config" / "campus_config.json"
     if cfg_path.exists():
         with open(cfg_path, encoding="utf-8") as f:
             return _merge(base, json.load(f))

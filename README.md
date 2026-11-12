@@ -135,7 +135,7 @@ start.bat
 
 ```bash
 # 需额外安装 torch / ultralytics / opencv-python（缺失时自动降级，服务不中断）
-python -m seat_monitor.main --config settings.json
+python -m seat_monitor.main
 ```
 
 - 监测服务默认运行在 `8200`，演示页 `http://127.0.0.1:8200` 包含
@@ -146,7 +146,8 @@ python -m seat_monitor.main --config settings.json
 - 检测到超时占座后推送 `POST http://127.0.0.1:8100/api/seat_event`，
   请求头 `X-Integration-Token` 与 `config/app.json` 的 `app.integration_token` 保持一致；
 - 推送成功后，新看板「工单闭环」实时出现待处理工单；
-- 座位标定写入 `rois.json`，预约数据写入 `reservations.json`；
+- 监测配置为 `seat_monitor/settings.json`，座位标定写入 `seat_monitor/rois.json`，
+  预约数据写入 `seat_monitor/reservations.json`；
 - 完整实现方案见 [docs/09_占座监测功能实现方案.md](docs/09_占座监测功能实现方案.md)。
 
 ## 8. 测试

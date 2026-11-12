@@ -30,6 +30,6 @@
     }
   },
   "campus_ai": {
-    "config_path": "campus_config.json"
+    "config_path": "config/campus_config.json"
   }
 }

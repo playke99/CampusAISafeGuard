@@ -87,5 +87,5 @@ class Settings:
 
 
 def load_settings(path: Optional[str] = None) -> Settings:
-    cfg_path = Path(path) if path else Path(__file__).resolve().parent.parent / "settings.json"
+    cfg_path = Path(path) if path else Path(__file__).resolve().parent / "settings.json"
     return Settings(cfg_path)
