@@ -526,7 +526,7 @@ def build(path: str) -> str:
              body_size=10)
         x += 3.06
     kpis = [("63", "项自动化测试通过", ACCENT), ("8", "个可运行演示场景", ACCENT_2),
-            ("4", "级预警分级", ORANGE), ("9", "张业务数据表", BLUE)]
+            ("4", "级预警分级", ORANGE), ("10", "张业务数据表", BLUE)]
     x = 0.6
     for num, label, color in kpis:
         rect(s, x, 4.7, 2.95, 1.15, fill=BG_CARD_2)

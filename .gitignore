@@ -9,5 +9,6 @@ snapshots/
 test_snapshots/
 seat_monitor/snapshots/
 seat_monitor/events.json
+logs/
 *.log
 .venv/

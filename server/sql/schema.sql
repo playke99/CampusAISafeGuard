@@ -45,6 +45,7 @@ CREATE TABLE IF NOT EXISTS alerts (
 CREATE INDEX IF NOT EXISTS idx_alerts_status ON alerts(status);
 CREATE INDEX IF NOT EXISTS idx_alerts_severity ON alerts(severity);
 CREATE INDEX IF NOT EXISTS idx_alerts_time ON alerts(occurred_at);
+CREATE INDEX IF NOT EXISTS idx_alerts_event ON alerts(event_id);
 
 -- ---------- 干预记录（人工/智能处置闭环） ----------
 CREATE TABLE IF NOT EXISTS interventions (
