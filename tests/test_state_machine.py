@@ -9,7 +9,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from seat_monitor.seat_state import SeatRuntime, SeatStateMachine, SeatStatus
+from seat_monitor.seat_state import SeatStateMachine, SeatStatus
 
 
 class FakeSettings:

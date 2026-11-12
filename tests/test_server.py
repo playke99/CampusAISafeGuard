@@ -137,7 +137,7 @@ def test_vision_detect_dedupe(server):
 
 def test_seat_extension_and_order_close(server):
     token = _login("admin", "admin123")
-    _, cfg_health = _request("GET", "/api/v1/health")
+    _request("GET", "/api/v1/health")
     status, body = _request(
         "POST", "/api/seat_event",
         body={"seat_id": "T-901", "zone_name": "图书馆测试区",

@@ -127,7 +127,7 @@ start.bat
 | GET | `/api/v1/audit`、`/api/v1/metrics` | 审计与指标 |
 | POST | `/api/seat_event` | 图书馆占座扩展事件接入（集成令牌） |
 
-完整规范见 [docs/06_API接口规范.md](docs/06_API接口规范.md)，在线文档 <http://127.0.0.1:8100/api/docs>。
+完整规范见 [docs/01_系统总体方案.md](docs/01_系统总体方案.md) 第六章（API 接口规范），在线文档 <http://127.0.0.1:8100/api/docs>。
 
 ## 7. 图书馆占座扩展
 
@@ -148,7 +148,7 @@ python -m seat_monitor.main
 - 推送成功后，新看板「工单闭环」实时出现待处理工单；
 - 监测配置为 `seat_monitor/settings.json`，座位标定写入 `seat_monitor/rois.json`，
   预约数据写入 `seat_monitor/reservations.json`；
-- 完整实现方案见 [docs/09_占座监测功能实现方案.md](docs/09_占座监测功能实现方案.md)。
+- 完整实现方案见 [docs/02_占座监测专项方案.md](docs/02_占座监测专项方案.md)。
 
 ## 8. 测试
 

@@ -9,7 +9,6 @@ from campus_ai.behavior_service.inference import Detection, MockBehaviorDetector
 from campus_ai.behavior_service.service import BehaviorViolationService
 from campus_ai.behavior_service.train import train
 from campus_ai.common.bus import InMemoryBus
-from campus_ai.common.push_gateway import RecordingPushGateway
 from campus_ai.scripts.make_demo_dataset import CLASSES, make_dataset
 
 

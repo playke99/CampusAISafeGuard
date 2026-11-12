@@ -32,9 +32,6 @@ class BehaviorViolationService:
         self.location = location
         self.targets = targets
 
-    def process_frame(self, frame=None) -> list[dict[str, Any]]:
-        return self.process_detections(self.detector.detect(frame))
-
     def process_detections(self, detections: list[Detection]) -> list[dict[str, Any]]:
         results: list[dict[str, Any]] = []
         for det in detections:

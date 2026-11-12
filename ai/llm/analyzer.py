@@ -1,13 +1,14 @@
-"""风险深判与处置建议：规则化分析器 + 可选本地 Ollama 增强。
+"""风险深判与处置建议：规则化分析器。
 
 对外统一输出：
 - recommendations(alert_type, severity, evidence) -> list[str]
 - deep_report(alert) -> Markdown 文本
+
+本地大模型深判由 campus_ai/agent_service 的 OllamaClient 承担（可离线降级）。
 """
 from __future__ import annotations
 
 import json
-import urllib.request
 from typing import Any
 
 TYPE_LABELS = {
@@ -40,14 +41,6 @@ BASE_ADVICE = {
 
 
 class RiskAnalyzer:
-    def __init__(self, use_ollama: bool = False,
-                 base_url: str = "http://localhost:11434",
-                 model: str = "qwen2.5:7b", timeout: float = 8.0) -> None:
-        self.use_ollama = use_ollama
-        self.base_url = base_url.rstrip("/")
-        self.model = model
-        self.timeout = timeout
-
     def recommendations(self, alert_type: str, severity: str,
                         evidence: dict[str, Any] | None = None) -> list[str]:
         advice = list(BASE_ADVICE.get(alert_type, ["通知值班人员核实现场情况"]))
@@ -66,7 +59,7 @@ class RiskAnalyzer:
             alert.get("alert_type", ""), alert.get("severity", "blue"), evidence)
         signal_text = evidence.get("signal_text") or "无"
         lines = [
-            f"# 校园安全事件分析报告",
+            "# 校园安全事件分析报告",
             "",
             f"- 预警编号：{alert.get('alert_id', '')}",
             f"- 事件编号：{alert.get('event_id', '')}",
@@ -86,19 +79,3 @@ class RiskAnalyzer:
         lines += ["", "## 证据留档", "```json",
                   json.dumps(evidence, ensure_ascii=False, indent=2), "```"]
         return "\n".join(lines)
-
-    def ollama_analyze(self, prompt: str) -> str | None:
-        """可选增强：本地 Ollama 可用时返回模型文本，否则返回 None。"""
-        if not self.use_ollama:
-            return None
-        payload = json.dumps({"model": self.model, "prompt": prompt,
-                              "stream": False}).encode("utf-8")
-        req = urllib.request.Request(
-            f"{self.base_url}/api/generate", data=payload,
-            headers={"Content-Type": "application/json"})
-        try:
-            with urllib.request.urlopen(req, timeout=self.timeout) as resp:
-                body = json.loads(resp.read().decode("utf-8"))
-            return str(body.get("response", "")).strip() or None
-        except Exception:  # noqa: BLE001 - 离线环境静默降级
-            return None

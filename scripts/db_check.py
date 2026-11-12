@@ -318,7 +318,7 @@ def check_consistency(conn, log) -> None:
 
 
 # ── E 备份恢复 ────────────────────────────────────────────
-def check_backup(conn, db_file: str, log) -> None:
+def check_backup(conn, log) -> None:
     log.info("===== E 备份恢复验证 =====")
     backup = Path(tempfile.mkdtemp()) / "backup.db"
     dest = sqlite3.connect(str(backup))
@@ -406,7 +406,7 @@ def main() -> None:
     check_performance(log)
     check_security(conn, log)
     check_consistency(conn, log)
-    check_backup(conn, str(target), log)
+    check_backup(conn, log)
     check_interface(conn, log)
     conn.close()
 

@@ -3,7 +3,6 @@ from __future__ import annotations
 
 import time
 import uuid
-from datetime import datetime
 from typing import Any
 
 from ai.llm.analyzer import RiskAnalyzer
@@ -143,7 +142,3 @@ class AlertEngine:
             "source": source,
             "occurred_at": event.get("timestamp", time.time()),
         }
-
-    @staticmethod
-    def occurred_text(ts: float) -> str:
-        return datetime.fromtimestamp(ts).strftime("%Y-%m-%d %H:%M:%S")

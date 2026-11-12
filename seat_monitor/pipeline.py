@@ -12,7 +12,7 @@ CaptureWorker --LatestFrameSlot--> InferenceWorker --DetectionQueue--> StateEngi
 """
 import logging
 import time
-from typing import Any, Callable, Dict, Optional
+from typing import Any, Callable, Optional
 
 from .capture import CaptureWorker, LatestFrameSlot
 from .inference import DetectionQueue, InferenceWorker

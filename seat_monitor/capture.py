@@ -80,11 +80,6 @@ class LatestFrameSlot:
                 "overwrites": self._overwrites,
             }
 
-    def clear(self):
-        with self._lock:
-            self._packet = None
-            self._annotated = None
-
 
 def _default_open(source: str):
     """默认视频源打开方式（惰性导入 cv2）"""

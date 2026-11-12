@@ -9,7 +9,6 @@
 """
 import argparse
 import logging
-import time
 from pathlib import Path
 
 from .background import BackgroundModel
@@ -63,15 +62,6 @@ class MonitorContext:
             preprocessor=self.preprocessor, background=self.background)
 
     # ── 帧共享（API/MJPEG 读取） ──────────────────────────
-    def set_frame(self, frame, annotated):
-        if frame is not None:
-            from .capture import FramePacket
-            self.slot.put(FramePacket(frame=frame, index=-1,
-                                      captured_at=time.time(),
-                                      source=str(self.settings.get("source"))))
-        if annotated is not None:
-            self.slot.set_annotated(annotated)
-
     def get_frame(self, annotated: bool = False):
         frame = self.slot.get_annotated() if annotated else self.slot.get_raw()
         return None if frame is None else frame.copy()

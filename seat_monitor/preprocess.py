@@ -15,8 +15,6 @@ import logging
 import time
 from typing import Any, Optional
 
-import numpy as np
-
 logger = logging.getLogger(__name__)
 
 DEFAULTS = {

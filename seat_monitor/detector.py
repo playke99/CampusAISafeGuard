@@ -17,7 +17,7 @@ cv2 / ultralytics 全部惰性导入，缺少依赖时依然可以导入本模�
 import logging
 import time
 from pathlib import Path
-from typing import Any, Callable, Dict, List, Optional, Tuple
+from typing import Any, Callable, List, Optional, Tuple
 
 import numpy as np
 

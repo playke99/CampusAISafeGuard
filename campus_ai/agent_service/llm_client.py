@@ -11,9 +11,6 @@ from typing import Any, Protocol
 
 from .parsers import MediaBundle, ParsedMedia
 
-REPORT_KEYS = ["event_type", "severity", "summary", "timeline",
-               "involved_count", "suggestion"]
-
 
 class LLMClient(Protocol):
     def analyze(self, bundle: MediaBundle, parsed: ParsedMedia) -> dict[str, Any]: ...

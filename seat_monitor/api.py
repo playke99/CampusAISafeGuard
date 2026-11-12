@@ -23,8 +23,6 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 from fastapi.staticfiles import StaticFiles
 
-from .seat_state import STATUS_CN
-
 if TYPE_CHECKING:
     from .main import MonitorContext
 

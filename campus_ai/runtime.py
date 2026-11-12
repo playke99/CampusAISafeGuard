@@ -22,7 +22,6 @@ from campus_ai.behavior_service.train import train as train_behavior_model
 from campus_ai.common.archive import JsonlArchive
 from campus_ai.common.bus import InMemoryBus, TOPIC_ORDER
 from campus_ai.common.config import PROJECT_ROOT, load_config, resolve_path
-from campus_ai.common.events import make_event
 from campus_ai.common.push_gateway import (HttpPushGateway, JsonlPushGateway,
                                            PushGateway)
 from campus_ai.intercom_service.audio_io import (RecordingSpeakerSink,
@@ -187,9 +186,6 @@ class CampusRuntime:
                 "deterrence_phrase": result["deterrence_phrase"],
             })
         return result
-
-    def simulate_intercom(self, texts: list[str]) -> list[dict[str, Any]]:
-        return [hit for hit in (self.handle_utterance({"transcript": t}) for t in texts) if hit]
 
     # ── 计划4：违规识别 → 人脸匹配 → Agent 归档 ────────────
     def ingest_behavior(self, payload: dict[str, Any]) -> list[dict[str, Any]]:

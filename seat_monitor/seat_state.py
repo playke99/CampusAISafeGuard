@@ -23,8 +23,6 @@ from enum import Enum
 from pathlib import Path
 from typing import Dict, List, Optional
 
-import numpy as np
-
 from .detector import Detector, Item, Person
 
 logger = logging.getLogger(__name__)
@@ -73,7 +71,6 @@ class SeatRuntime:
         self.polygon = polygon
         self.status = SeatStatus.FREE
         self.person_miss = 0          # 连续未检出人的次数
-        self.last_person_at: float = 0.0   # 最后一次见到人的时刻
         self.absent_since: Optional[float] = None  # 确认"人不在"的起始时刻
         self.items: List[str] = []
         self.item_since: Optional[float] = None    # 物品首次出现在座位的时刻
@@ -189,7 +186,6 @@ class SeatStateMachine:
 
             if present:
                 st.person_miss = 0
-                st.last_person_at = now
                 st.absent_since = None
                 if st.status in (SeatStatus.AWAY, SeatStatus.TIMING, SeatStatus.SUSPECT):
                     logger.info("座位 %s 人已回座", st.seat_id)
