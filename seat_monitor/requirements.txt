@@ -1,0 +1,8 @@
+ultralytics>=8.3
+opencv-python
+fastapi
+uvicorn
+numpy
+pydantic
+requests
+pytest>=8

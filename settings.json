@@ -1,0 +1,34 @@
+{
+  "source": "0",
+  "camera_id": "lib-cam-01",
+  "zone_prefix": "图书馆自习区",
+  "pose_weights": "../1.数据采集/YOLO26测试/yolo26n-pose.pt",
+  "detect_weights": "seat_monitor/weights/yolo26n.pt",
+  "conf": 0.35,
+  "grace_seconds": 180,
+  "absent_threshold_minutes": 25,
+  "seat_thresholds": {},
+  "absent_confirm_frames": 3,
+  "require_items": true,
+  "detect_interval_sec": 1.0,
+  "preprocess": {
+    "resize_width": 960,
+    "clahe": true,
+    "clahe_clip": 2.0,
+    "denoise": false
+  },
+  "background": {
+    "enabled": true,
+    "method": "auto",
+    "history": 240,
+    "var_threshold": 32.0,
+    "diff_threshold": 22.0,
+    "occupied_ratio": 0.10,
+    "static_window_sec": 30.0,
+    "static_stability": 0.05,
+    "assist_items": true
+  },
+  "agent_url": "http://127.0.0.1:8100",
+  "agent_token": "campus-local",
+  "http_port": 8200
+}

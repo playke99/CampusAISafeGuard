@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>图书馆占座嫌疑监测 · 实时演示台</title>
+<style>
+  :root{
+    --bg:#07111f; --card:rgba(17,39,71,.72); --card2:rgba(14,32,59,.9);
+    --line:#1e3c66; --text:#e8f2ff; --muted:#93accb;
+    --cyan:#35d0ff; --blue:#2f7cff; --red:#ff4d5e; --orange:#ff9f43;
+    --yellow:#ffd166; --green:#3ddc97;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{
+    background:
+      radial-gradient(900px 420px at 8% -10%, rgba(53,208,255,.10), transparent 60%),
+      radial-gradient(760px 420px at 96% 0%, rgba(47,124,255,.10), transparent 62%),
+      var(--bg);
+    color:var(--text);
+    font-family:"Microsoft YaHei","PingFang SC","Segoe UI",sans-serif;
+    min-height:100vh;
+  }
+  header{
+    display:flex;align-items:center;gap:14px;flex-wrap:wrap;
+    padding:16px 26px;border-bottom:1px solid var(--line);
+    background:rgba(10,24,46,.72);backdrop-filter:blur(8px);
+    position:sticky;top:0;z-index:10;
+  }
+  header h1{font-size:18px;font-weight:700;letter-spacing:.5px}
+  header h1 em{font-style:normal;color:var(--cyan);margin-right:8px}
+  .chip{
+    font-size:12px;color:var(--muted);border:1px solid var(--line);
+    background:var(--card);border-radius:999px;padding:4px 12px;
+  }
+  .chip b{color:var(--text);font-weight:600}
+  .chip.ok b{color:var(--green)} .chip.warn b{color:var(--orange)} .chip.bad b{color:var(--red)}
+  .grow{flex:1}
+  main{
+    display:grid;gap:18px;padding:18px 26px 30px;
+    grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);
+    grid-template-areas:"video zones" "alerts history";
+  }
+  .panel{
+    background:var(--card);border:1px solid var(--line);border-radius:14px;
+    padding:16px 18px;min-height:0;
+  }
+  .panel h2{font-size:15px;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+  .panel h2::before{content:"";width:4px;height:14px;border-radius:2px;background:var(--cyan)}
+  .p-video{grid-area:video}.p-zones{grid-area:zones}
+  .p-alerts{grid-area:alerts}.p-history{grid-area:history}
+
+  .video-wrap{position:relative;background:#050c17;border:1px solid var(--line);
+    border-radius:10px;overflow:hidden;aspect-ratio:16/9;display:flex;align-items:center;justify-content:center}
+  .video-wrap img{width:100%;height:100%;object-fit:contain;display:block}
+  .video-empty{color:var(--muted);font-size:13px;text-align:center;padding:20px;position:absolute}
+  .video-badge{position:absolute;left:10px;top:10px;font-size:11px;color:#04121f;
+    background:var(--cyan);border-radius:4px;padding:2px 8px;font-weight:700}
+  .video-tools{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;align-items:center}
+  button{
+    background:var(--card2);border:1px solid var(--line);color:var(--text);
+    font-size:12px;border-radius:8px;padding:7px 14px;cursor:pointer;transition:.15s;
+  }
+  button:hover{border-color:var(--cyan);color:var(--cyan)}
+  button.primary{background:rgba(53,208,255,.14);border-color:rgba(53,208,255,.5);color:var(--cyan)}
+  button.danger{color:var(--red);border-color:rgba(255,77,94,.4)}
+  button:disabled{opacity:.4;cursor:not-allowed}
+  input,select{
+    background:var(--card2);border:1px solid var(--line);color:var(--text);
+    font-size:12px;border-radius:8px;padding:7px 10px;outline:none;
+  }
+  input:focus,select:focus{border-color:var(--cyan)}
+  label{font-size:12px;color:var(--muted)}
+
+  .zones{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;max-height:420px;overflow:auto}
+  .zone{
+    background:var(--card2);border:1px solid var(--line);border-radius:10px;
+    padding:10px 12px;position:relative;
+  }
+  .zone .sid{font-size:13px;font-weight:700;display:flex;align-items:center;gap:7px}
+  .dot{width:8px;height:8px;border-radius:50%;flex:none}
+  .st-free{color:var(--green)} .st-occupied{color:var(--cyan)}
+  .st-away{color:var(--blue)} .st-timing{color:var(--yellow)} .st-suspect{color:var(--red)}
+  .zone .meta{font-size:11px;color:var(--muted);margin-top:6px;line-height:1.6}
+  .zone .bar{height:4px;border-radius:2px;background:#132a4a;margin-top:8px;overflow:hidden}
+  .zone .bar i{display:block;height:100%;background:var(--blue);border-radius:2px}
+  .zone .static-tag{font-size:10px;color:var(--orange);border:1px solid rgba(255,159,67,.4);
+    border-radius:4px;padding:1px 5px;margin-top:6px;display:inline-block}
+
+  .alerts{max-height:340px;overflow:auto;display:flex;flex-direction:column;gap:8px}
+  .alert{
+    background:var(--card2);border:1px solid var(--line);border-left:3px solid var(--red);
+    border-radius:8px;padding:10px 12px;
+  }
+  .alert .row{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+  .alert .t{font-size:13px;font-weight:700}
+  .alert .s{font-size:11px;color:var(--muted)}
+  .alert .ops{margin-left:auto;display:flex;gap:6px}
+  .alert .ops button{padding:4px 9px;font-size:11px}
+  .alert .detail{font-size:11px;color:var(--muted);margin-top:6px;line-height:1.6}
+  .badge{font-size:10px;border-radius:4px;padding:1px 6px;font-weight:700}
+  .b-pending{color:var(--red);background:rgba(255,77,94,.12)}
+  .b-done{color:var(--green);background:rgba(61,220,151,.12)}
+  .b-repeat{color:var(--orange);background:rgba(255,159,67,.14)}
+  .empty{color:var(--muted);font-size:12px;text-align:center;padding:18px 0}
+
+  .filters{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px;align-items:center}
+  table{width:100%;border-collapse:collapse;font-size:12px}
+  th,td{padding:7px 8px;text-align:left;border-bottom:1px solid rgba(30,60,102,.5)}
+  th{color:var(--cyan);font-weight:600;position:sticky;top:0;background:var(--card2)}
+  td{color:var(--text)}
+  td.sub{color:var(--muted);font-size:11px}
+  .tbl-wrap{max-height:280px;overflow:auto;border:1px solid var(--line);border-radius:8px}
+  .toast{
+    position:fixed;right:22px;bottom:22px;background:var(--card2);border:1px solid var(--cyan);
+    color:var(--text);border-radius:10px;padding:10px 16px;font-size:13px;z-index:50;
+    opacity:0;transition:.3s;pointer-events:none;
+  }
+  .toast.show{opacity:1}
+  @media (max-width:1100px){
+    main{grid-template-columns:1fr;grid-template-areas:"video" "zones" "alerts" "history"}
+  }
+</style>
+</head>
+<body>
+<header>
+  <h1><em>数智卫校</em>图书馆占座嫌疑监测 · 实时演示台</h1>
+  <span class="chip" id="chip-source">视频源 <b>-</b></span>
+  <span class="chip" id="chip-detector">检测器 <b>-</b></span>
+  <span class="chip" id="chip-bg">背景建模 <b>-</b></span>
+  <span class="chip" id="chip-pipe">流水线 <b>-</b></span>
+  <span class="grow"></span>
+  <label>全局阈值 <input id="th-global" type="number" min="1" step="1" style="width:64px"> 分钟</label>
+  <button class="primary" id="btn-th">保存阈值</button>
+</header>
+
+<main>
+  <!-- 模块一：实时视频流预览 -->
+  <section class="panel p-video">
+    <h2>实时视频预览</h2>
+    <div class="video-wrap">
+      <img id="video" alt="视频流加载中…" src="/api/video_feed?annotated=1">
+      <div class="video-empty" id="video-empty">正在接入视频流，请确认采集线程已启动…</div>
+      <span class="video-badge" id="video-badge">LIVE</span>
+    </div>
+    <div class="video-tools">
+      <button id="btn-snapshot">保存快照</button>
+      <label><input type="checkbox" id="annotated" checked style="width:auto"> 显示标注</label>
+      <span class="chip">检测间隔 <b id="chip-interval">-</b></span>
+      <span class="chip">推理耗时 <b id="chip-ms">-</b></span>
+      <span class="chip">帧序号 <b id="chip-frame">-</b></span>
+    </div>
+  </section>
+
+  <!-- 模块二：监测区域状态可视化面板 -->
+  <section class="panel p-zones">
+    <h2>监测区域状态 <span class="chip" style="margin-left:auto" id="chip-th">阈值 - 分钟</span></h2>
+    <div class="zones" id="zones"></div>
+    <div class="video-tools" style="margin-top:12px">
+      <label>座位 <input id="th-seat" placeholder="如 A01" style="width:72px"></label>
+      <label>阈值 <input id="th-seat-min" type="number" min="1" placeholder="分钟" style="width:64px"></label>
+      <button id="btn-th-seat">按座位设置</button>
+      <button id="btn-th-seat-clear" class="danger">清除覆盖</button>
+    </div>
+  </section>
+
+  <!-- 模块三：占座嫌疑事件告警列表 -->
+  <section class="panel p-alerts">
+    <h2>占座嫌疑告警 <span class="chip" style="margin-left:auto" id="chip-pending">待处理 0</span></h2>
+    <div class="alerts" id="alerts"></div>
+  </section>
+
+  <!-- 模块四：历史识别记录查询 -->
+  <section class="panel p-history">
+    <h2>历史识别记录</h2>
+    <div class="filters">
+      <input id="f-seat" placeholder="座位号" style="width:80px">
+      <select id="f-status">
+        <option value="">全部状态</option>
+        <option value="待处理">待处理</option>
+        <option value="已处理">已处理</option>
+      </select>
+      <input id="f-date" type="date">
+      <input id="f-q" placeholder="关键词（区域/物品）" style="width:130px">
+      <button class="primary" id="btn-search">查询</button>
+      <span class="chip">共 <b id="chip-total">0</b> 条</span>
+    </div>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>时间</th><th>座位</th><th>缺席(分)</th><th>遗留物品</th><th>状态</th><th>次数</th></tr></thead>
+        <tbody id="history"></tbody>
+      </table>
+    </div>
+  </section>
+</main>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const $ = id => document.getElementById(id);
+const STATUS_COLOR = {free:"#3ddc97",occupied:"#35d0ff",away:"#2f7cff",timing:"#ffd166",suspect:"#ff4d5e"};
+let lastEvents = [];
+
+function toast(msg){
+  const t = $("toast"); t.textContent = msg; t.classList.add("show");
+  setTimeout(() => t.classList.remove("show"), 2200);
+}
+async function api(url, opts){
+  const r = await fetch(url, opts);
+  if(!r.ok) throw new Error((await r.json().catch(()=>({}))).detail || r.status);
+  return r.json();
+}
+
+/* ── 实时状态：座位面板 + 顶部芯片 ───────────────────── */
+async function refreshState(){
+  try{
+    const s = await api("/api/state");
+    $("chip-source").innerHTML = "视频源 <b>" + (s.source ?? "-") + "</b>";
+    const det = s.detector || {};
+    const dchip = $("chip-detector");
+    dchip.className = "chip " + (s.degraded ? "bad" : "ok");
+    dchip.innerHTML = "检测器 <b>" + (det.mode_cn || "-") + "</b>";
+    const pipe = s.pipeline_running || {};
+    const bad = Object.entries(pipe).filter(([,v]) => !v).map(([k]) => k);
+    const pchip = $("chip-pipe");
+    pchip.className = "chip " + (bad.length ? "warn" : "ok");
+    pchip.innerHTML = "流水线 <b>" + (bad.length ? "异常:" + bad.join("/") : "全部运行") + "</b>";
+    $("chip-th").innerHTML = "阈值 <b>" + s.threshold_minutes + "</b> 分钟"
+      + (Object.keys(s.seat_thresholds||{}).length ? "（含按座位覆盖）" : "");
+    $("chip-interval").textContent = "-";
+    $("th-global").value = s.threshold_minutes;
+
+    const zones = $("zones");
+    if(!s.seats || !s.seats.length){
+      zones.innerHTML = '<div class="empty">尚未标定座位 ROI（POST /api/rois）</div>';
+      return;
+    }
+    zones.innerHTML = s.seats.map(z => {
+      const color = STATUS_COLOR[z.status] || "#93accb";
+      const bgPct = Math.round((z.bg_ratio || 0) * 100);
+      return `<div class="zone">
+        <div class="sid"><span class="dot" style="background:${color}"></span>${z.seat_id}
+          <span class="st-${z.status}" style="font-size:11px">${z.status_cn}</span></div>
+        <div class="meta">${z.zone_name || ""}<br>
+          缺席 <b>${z.absent_minutes}</b> 分 · 物品 ${z.items.length ? z.items.join("、") : "无"}<br>
+          前景占比 ${bgPct}%${z.events_today ? " · 今日 " + z.events_today + " 次" : ""}</div>
+        <div class="bar"><i style="width:${Math.min(100, bgPct)}%"></i></div>
+        ${z.bg_static ? '<span class="static-tag">静态遗留物</span>' : ""}
+      </div>`;
+    }).join("");
+    $("video-empty").style.display = "none";
+  }catch(e){ console.warn(e); }
+}
+
+/* ── 背景建模状态 ───────────────────────────────────── */
+async function refreshBg(){
+  try{
+    const b = await api("/api/background");
+    const chip = $("chip-bg");
+    chip.className = "chip " + (b.enabled && b.backend !== "none" ? "ok" : "warn");
+    chip.innerHTML = "背景建模 <b>" + (b.enabled ? b.backend : "关闭") + "</b>";
+  }catch(e){}
+}
+
+/* ── 告警列表（待处理置顶） + 历史记录 ─────────────────── */
+function renderAlerts(events){
+  const pending = events.filter(e => e.status === "待处理");
+  $("chip-pending").innerHTML = "待处理 <b>" + pending.length + "</b>";
+  const list = $("alerts");
+  const show = [...pending, ...events.filter(e => e.status !== "待处理")].slice(0, 12);
+  if(!show.length){ list.innerHTML = '<div class="empty">暂无占座嫌疑事件</div>'; return; }
+  list.innerHTML = show.map(e => `
+    <div class="alert" style="border-left-color:${e.status === "待处理" ? "var(--red)" : "var(--green)"}">
+      <div class="row">
+        <span class="t">${e.seat_id}</span>
+        <span class="badge ${e.status === "待处理" ? "b-pending" : "b-done"}">${e.status}</span>
+        ${e.repeat_count > 1 ? `<span class="badge b-repeat">第 ${e.repeat_count} 次</span>` : ""}
+        <span class="s">${e.occurred_at || ""}</span>
+        ${e.status === "待处理" ? `<span class="ops">
+          <button onclick="resolveEvent('${e.event_id}','贴提示条')">贴提示条</button>
+          <button onclick="resolveEvent('${e.event_id}','清座')">清座</button>
+          <button class="danger" onclick="resolveEvent('${e.event_id}','误报')">误报</button>
+        </span>` : ""}
+      </div>
+      <div class="detail">${e.zone_name || ""} · 缺席 ${e.absent_minutes} 分钟 ·
+        物品：${(e.items || []).join("、") || "无"} · 前景 ${(Math.round((e.bg_ratio || 0) * 100))}%
+        ${e.multi_seat ? " · 邻座 " + (e.multi_seat_neighbors || []).join("/") + " 有人" : ""}
+        ${e.snapshot ? ` · <a style="color:var(--cyan)" target="_blank" href="/${e.snapshot}">快照</a>` : ""}</div>
+    </div>`).join("");
+}
+
+async function loadHistory(){
+  const p = new URLSearchParams();
+  if($("f-seat").value) p.set("seat_id", $("f-seat").value.trim());
+  if($("f-status").value) p.set("status", $("f-status").value);
+  if($("f-date").value) p.set("date", $("f-date").value);
+  if($("f-q").value) p.set("q", $("f-q").value.trim());
+  p.set("limit", "200");
+  const data = await api("/api/events?" + p.toString());
+  lastEvents = data.records || [];
+  $("chip-total").textContent = data.total;
+  renderAlerts(lastEvents);
+  $("history").innerHTML = lastEvents.map(e => `
+    <tr><td>${e.occurred_at || "-"}</td><td>${e.seat_id}</td>
+      <td>${e.absent_minutes}</td>
+      <td class="sub">${(e.items || []).join("、") || "-"}</td>
+      <td>${e.status}</td><td>${e.repeat_count}</td></tr>`).join("")
+    || '<tr><td colspan="6" class="sub" style="text-align:center">无匹配记录</td></tr>';
+}
+
+/* ── 操作 ─────────────────────────────────────────── */
+window.resolveEvent = async (id, action) => {
+  try{
+    await api(`/api/events/${id}/resolve`, {
+      method:"POST", headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({action})});
+    toast(`已处置：${action}`);
+    loadHistory();
+  }catch(e){ toast("处置失败：" + e.message); }
+};
+$("btn-search").onclick = loadHistory;
+$("btn-th").onclick = async () => {
+  try{
+    await api("/api/settings", {method:"POST", headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({absent_threshold_minutes: Number($("th-global").value)})});
+    toast("全局阈值已保存"); refreshState();
+  }catch(e){ toast("保存失败：" + e.message); }
+};
+$("btn-th-seat").onclick = async () => {
+  const seat = $("th-seat").value.trim(), min = Number($("th-seat-min").value);
+  if(!seat || !min){ toast("请填写座位号与分钟数"); return; }
+  try{
+    await api("/api/seat_thresholds", {method:"POST", headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({seat_id: seat, minutes: min})});
+    toast(`座位 ${seat} 阈值已设为 ${min} 分钟`); refreshState();
+  }catch(e){ toast("保存失败：" + e.message); }
+};
+$("btn-th-seat-clear").onclick = async () => {
+  const seat = $("th-seat").value.trim();
+  if(!seat){ toast("请填写座位号"); return; }
+  try{
+    await api("/api/seat_thresholds", {method:"POST", headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({seat_id: seat})});
+    toast(`座位 ${seat} 已恢复全局阈值`); refreshState();
+  }catch(e){ toast("操作失败：" + e.message); }
+};
+$("btn-snapshot").onclick = () => window.open("/api/snapshot.jpg?annotated=1", "_blank");
+$("annotated").onchange = e => {
+  $("video").src = "/api/video_feed?annotated=" + (e.target.checked ? "1" : "0");
+};
+$("video").onerror = () => { $("video-empty").style.display = "block"; };
+
+/* ── 轮询 ─────────────────────────────────────────── */
+refreshState(); refreshBg(); loadHistory();
+setInterval(refreshState, 1000);
+setInterval(refreshBg, 2000);
+setInterval(loadHistory, 3000);
+</script>
+</body>
+</html>

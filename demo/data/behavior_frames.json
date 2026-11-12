@@ -1,0 +1,19 @@
+{
+  "camera_id": "teach-cam-01",
+  "location": "教学楼A栋入口",
+  "comment": "虚拟检测帧：frame_1 三名学生经过，两人违规可定位，一人人脸未匹配（需人工复核）",
+  "frames": [
+    {
+      "frame_id": "frame_1",
+      "detections": [
+        { "label": "slippers", "conf": 0.92, "bbox": [12, 30, 88, 140], "face_ref": "2023001" },
+        { "label": "breakfast", "conf": 0.87, "bbox": [200, 40, 260, 150], "face_ref": "2023002" },
+        { "label": "slippers", "conf": 0.81, "bbox": [320, 50, 390, 160], "face_ref": "unknown_face" }
+      ]
+    },
+    {
+      "frame_id": "frame_2",
+      "detections": []
+    }
+  ]
+}

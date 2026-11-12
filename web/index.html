@@ -1,0 +1,933 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>数智卫校 · 校园安全 AI 预警与干预系统</title>
+<style>
+:root{
+  --bg:#050e1c; --bg2:#07162a; --panel:#0a1a30; --panel2:#0d2138;
+  --line:rgba(80,180,255,.14); --line2:rgba(80,180,255,.28);
+  --text:#e8f2ff; --muted:#7f99b8; --faint:#4d6884;
+  --cyan:#3dd8ff; --blue:#3b82f6; --green:#32d583;
+  --red:#ff4d6d; --orange:#ff9f43; --yellow:#ffd93d; --purple:#a78bfa;
+  --shadow:0 18px 48px rgba(0,0,0,.38);
+  --radius:16px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{
+  font-family:"Microsoft YaHei","PingFang SC","Segoe UI",system-ui,sans-serif;
+  background:var(--bg);color:var(--text);-webkit-font-smoothing:antialiased;
+  background-image:
+    radial-gradient(900px 500px at 85% -10%,rgba(61,216,255,.10),transparent 60%),
+    radial-gradient(700px 420px at 0% 100%,rgba(59,130,246,.10),transparent 60%),
+    linear-gradient(rgba(80,180,255,.025) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(80,180,255,.025) 1px,transparent 1px);
+  background-size:auto,auto,48px 48px,48px 48px;
+}
+a{color:inherit;text-decoration:none}
+button{font-family:inherit;cursor:pointer}
+.hidden{display:none!important}
+::-webkit-scrollbar{width:9px;height:9px}
+::-webkit-scrollbar-thumb{background:#1d3a5c;border-radius:6px}
+::-webkit-scrollbar-track{background:transparent}
+
+/* ---------- 登录 ---------- */
+.login-wrap{min-height:100vh;display:grid;grid-template-columns:1.15fr .85fr;align-items:stretch}
+.login-hero{position:relative;padding:64px 68px;display:flex;flex-direction:column;justify-content:center;overflow:hidden;border-right:1px solid var(--line)}
+.login-hero::before{content:"";position:absolute;inset:-20%;background:
+  radial-gradient(560px 360px at 30% 30%,rgba(61,216,255,.18),transparent 65%),
+  radial-gradient(520px 360px at 80% 80%,rgba(59,130,246,.18),transparent 65%);pointer-events:none}
+.login-hero::after{content:"";position:absolute;inset:0;background-image:
+  linear-gradient(rgba(61,216,255,.05) 1px,transparent 1px),
+  linear-gradient(90deg,rgba(61,216,255,.05) 1px,transparent 1px);
+  background-size:56px 56px;mask-image:radial-gradient(circle at 40% 40%,#000 10%,transparent 75%)}
+.hero-inner{position:relative;z-index:2;max-width:620px}
+.brand-mark{display:flex;align-items:center;gap:14px;margin-bottom:46px}
+.brand-logo{width:52px;height:52px;border-radius:15px;display:grid;place-items:center;
+  background:linear-gradient(145deg,rgba(61,216,255,.22),rgba(59,130,246,.1));
+  border:1px solid rgba(61,216,255,.35);box-shadow:0 0 28px rgba(61,216,255,.22)}
+.brand-logo svg{width:30px;height:30px}
+.brand-name{font-size:16px;letter-spacing:.16em;color:var(--cyan);font-weight:600}
+.brand-sub{font-size:12px;color:var(--muted);letter-spacing:.12em;margin-top:3px}
+.hero-title{font-size:44px;line-height:1.18;font-weight:800;letter-spacing:.01em}
+.hero-title span{background:linear-gradient(100deg,var(--cyan),#7cb8ff 60%,#a78bfa);
+  -webkit-background-clip:text;background-clip:text;color:transparent}
+.hero-desc{margin-top:20px;color:#9db4cf;font-size:15px;line-height:1.9;max-width:540px}
+.hero-points{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:38px}
+.hero-point{display:flex;gap:12px;align-items:flex-start;padding:15px 16px;border:1px solid var(--line);
+  border-radius:12px;background:rgba(10,26,48,.55);backdrop-filter:blur(6px)}
+.hero-point b{display:block;font-size:13.5px;margin-bottom:4px}
+.hero-point p{font-size:12px;color:var(--muted);line-height:1.6}
+.hero-point .dot{width:8px;height:8px;border-radius:50%;margin-top:5px;flex:0 0 auto;
+  background:var(--cyan);box-shadow:0 0 12px var(--cyan)}
+.login-panel{display:flex;align-items:center;justify-content:center;padding:40px}
+.login-card{width:100%;max-width:400px;padding:38px 34px;border:1px solid var(--line);
+  border-radius:22px;background:linear-gradient(160deg,rgba(13,33,56,.92),rgba(7,20,38,.94));
+  box-shadow:var(--shadow)}
+.login-card h2{font-size:23px;margin-bottom:6px}
+.login-card .tip{color:var(--muted);font-size:13px;margin-bottom:28px}
+.field{margin-bottom:16px}
+.field label{display:block;font-size:12.5px;color:var(--muted);margin-bottom:8px;letter-spacing:.05em}
+.field input,.field select,.field textarea{width:100%;padding:12px 14px;border-radius:11px;
+  border:1px solid var(--line2);background:rgba(4,14,28,.8);color:var(--text);font-size:14px;
+  outline:none;transition:.2s}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--cyan);
+  box-shadow:0 0 0 3px rgba(61,216,255,.13)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:11px 18px;
+  border-radius:11px;border:1px solid var(--line2);background:rgba(19,44,72,.7);color:var(--text);
+  font-size:13.5px;font-weight:600;transition:.18s}
+.btn:hover{border-color:var(--cyan);color:var(--cyan);transform:translateY(-1px)}
+.btn.primary{background:linear-gradient(120deg,#1a6dff,#3dd8ff);border:none;color:#04111f;
+  box-shadow:0 10px 26px rgba(30,130,255,.3)}
+.btn.primary:hover{filter:brightness(1.08);color:#04111f}
+.btn.danger{border-color:rgba(255,77,109,.5);color:var(--red)}
+.btn.danger:hover{background:rgba(255,77,109,.12);color:var(--red)}
+.btn.small{padding:7px 12px;font-size:12px;border-radius:9px}
+.btn.block{width:100%}
+.btn:disabled{opacity:.45;cursor:not-allowed;transform:none}
+.demo-users{display:flex;flex-wrap:wrap;gap:8px;margin-top:18px}
+.demo-user{font-size:11.5px;color:var(--muted);padding:5px 10px;border-radius:20px;
+  border:1px dashed var(--line2);background:rgba(10,26,48,.5)}
+.demo-user:hover{color:var(--cyan);border-color:var(--cyan);cursor:pointer}
+.login-error{color:var(--red);font-size:12.5px;min-height:18px;margin-top:12px}
+
+/* ---------- 主框架 ---------- */
+.app{display:grid;grid-template-columns:250px minmax(0,1fr);min-height:100vh}
+.sidebar{position:sticky;top:0;height:100vh;padding:24px 16px;display:flex;flex-direction:column;
+  border-right:1px solid var(--line);background:linear-gradient(180deg,rgba(8,22,42,.96),rgba(5,14,28,.9));
+  backdrop-filter:blur(12px);z-index:20}
+.side-brand{display:flex;align-items:center;gap:11px;padding:0 8px 22px;border-bottom:1px solid var(--line)}
+.side-brand .brand-logo{width:40px;height:40px;border-radius:12px}
+.side-brand .brand-logo svg{width:24px;height:24px}
+.side-brand b{display:block;font-size:13.5px;letter-spacing:.08em}
+.side-brand span{font-size:10.5px;color:var(--muted);letter-spacing:.1em}
+.nav{margin-top:18px;display:flex;flex-direction:column;gap:4px;overflow-y:auto}
+.nav-item{display:flex;align-items:center;gap:11px;padding:11px 12px;border-radius:10px;
+  color:#93abc6;font-size:13.5px;border:1px solid transparent;transition:.16s;cursor:pointer}
+.nav-item svg{width:17px;height:17px;opacity:.8;flex:0 0 auto}
+.nav-item:hover{background:rgba(61,216,255,.07);color:#dceeff}
+.nav-item.active{background:linear-gradient(100deg,rgba(61,216,255,.16),rgba(59,130,246,.07));
+  color:var(--cyan);border-color:rgba(61,216,255,.25);box-shadow:inset 0 0 22px rgba(61,216,255,.05)}
+.side-foot{margin-top:auto;padding-top:18px;border-top:1px solid var(--line);font-size:11px;color:var(--faint);line-height:1.7}
+.main{min-width:0;display:flex;flex-direction:column}
+.topbar{position:sticky;top:0;z-index:15;display:flex;align-items:center;gap:18px;
+  padding:16px 30px;border-bottom:1px solid var(--line);
+  background:rgba(5,14,28,.82);backdrop-filter:blur(14px)}
+.page-title{font-size:19px;font-weight:700}
+.page-sub{font-size:12px;color:var(--muted);margin-top:2px}
+.topbar-right{margin-left:auto;display:flex;align-items:center;gap:12px}
+.live{display:flex;align-items:center;gap:7px;font-size:11.5px;color:var(--green);
+  padding:6px 11px;border-radius:20px;border:1px solid rgba(50,213,131,.3);background:rgba(50,213,131,.08)}
+.live i{width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 10px var(--green);
+  animation:pulse 1.8s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+.user-chip{display:flex;align-items:center;gap:10px;padding:7px 12px;border:1px solid var(--line);
+  border-radius:12px;background:rgba(13,33,56,.6)}
+.avatar{width:32px;height:32px;border-radius:9px;display:grid;place-items:center;font-size:13px;font-weight:700;
+  color:#04111f;background:linear-gradient(140deg,#3dd8ff,#3b82f6)}
+.user-chip b{display:block;font-size:12.5px}
+.user-chip span{font-size:10.5px;color:var(--muted)}
+.view{padding:26px 30px 48px;flex:1}
+.section-head{display:flex;align-items:center;gap:14px;margin-bottom:16px}
+.section-head h3{font-size:15px;font-weight:700}
+.section-head .line{flex:1;height:1px;background:linear-gradient(90deg,var(--line2),transparent)}
+.section-head .hint{font-size:11.5px;color:var(--faint)}
+
+/* ---------- 卡片 / 指标 ---------- */
+.grid{display:grid;gap:16px}
+.stats{grid-template-columns:repeat(6,minmax(0,1fr));margin-bottom:16px}
+.stat{padding:18px;border:1px solid var(--line);border-radius:var(--radius);
+  background:linear-gradient(155deg,rgba(13,33,56,.86),rgba(8,21,39,.86));position:relative;overflow:hidden}
+.stat::after{content:"";position:absolute;right:-24px;top:-24px;width:86px;height:86px;border-radius:50%;
+  background:radial-gradient(circle,rgba(61,216,255,.14),transparent 70%)}
+.stat .k{font-size:11.5px;color:var(--muted);letter-spacing:.06em}
+.stat .v{font-size:30px;font-weight:800;margin-top:8px;line-height:1;font-variant-numeric:tabular-nums}
+.stat .v small{font-size:12px;color:var(--muted);font-weight:500;margin-left:5px}
+.stat.red .v{color:var(--red)} .stat.orange .v{color:var(--orange)}
+.stat.cyan .v{color:var(--cyan)} .stat.green .v{color:var(--green)}
+.stat.yellow .v{color:var(--yellow)}
+.card{padding:20px;border:1px solid var(--line);border-radius:var(--radius);
+  background:linear-gradient(160deg,rgba(11,28,50,.88),rgba(7,19,36,.9));box-shadow:0 12px 30px rgba(0,0,0,.16)}
+.card-head{display:flex;align-items:center;gap:10px;margin-bottom:16px}
+.card-head h4{font-size:14px;font-weight:700}
+.card-head .sub{font-size:11.5px;color:var(--muted);margin-left:auto}
+.overview-grid{display:grid;grid-template-columns:1.55fr 1fr;gap:16px;margin-bottom:16px}
+.overview-grid2{display:grid;grid-template-columns:1.1fr .9fr;gap:16px}
+.chart-wrap{width:100%;overflow:hidden}
+.chart-wrap svg{width:100%;height:auto;display:block}
+.legend{display:flex;flex-wrap:wrap;gap:12px;margin-top:12px}
+.legend span{font-size:11.5px;color:var(--muted);display:flex;align-items:center;gap:6px}
+.legend i{width:9px;height:9px;border-radius:3px;display:inline-block}
+.sev-row{display:flex;align-items:center;gap:12px;margin-bottom:14px}
+.sev-row .name{width:58px;font-size:12px;color:var(--muted)}
+.sev-bar{flex:1;height:9px;border-radius:8px;background:rgba(255,255,255,.06);overflow:hidden}
+.sev-bar i{display:block;height:100%;border-radius:8px;transition:width .7s cubic-bezier(.2,.7,.2,1)}
+.sev-row .num{width:34px;text-align:right;font-size:13px;font-weight:700}
+.cam-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:11px}
+.cam{padding:13px 14px;border:1px solid var(--line);border-radius:12px;background:rgba(6,17,33,.65)}
+.cam-top{display:flex;align-items:center;gap:8px;margin-bottom:7px}
+.cam-top b{font-size:12px}
+.cam-loc{font-size:11.5px;color:var(--muted);line-height:1.5}
+.cam-meta{display:flex;justify-content:space-between;margin-top:9px;font-size:11px;color:var(--faint)}
+.status-dot{width:8px;height:8px;border-radius:50%;background:var(--green);box-shadow:0 0 8px var(--green);flex:0 0 auto}
+.status-dot.offline{background:var(--faint);box-shadow:none}
+.latest-item{display:flex;gap:12px;padding:12px 0;border-bottom:1px dashed rgba(80,180,255,.12);cursor:pointer}
+.latest-item:last-child{border-bottom:none}
+.latest-item:hover .latest-sum{color:var(--cyan)}
+.latest-time{font-size:11px;color:var(--faint);flex:0 0 76px;font-variant-numeric:tabular-nums}
+.latest-sum{font-size:12.5px;line-height:1.55;transition:.15s}
+.latest-meta{font-size:11px;color:var(--muted);margin-top:4px}
+
+/* ---------- 徽标 / 表格 ---------- */
+.badge{display:inline-flex;align-items:center;gap:5px;padding:3px 9px;border-radius:20px;
+  font-size:11px;font-weight:600;letter-spacing:.02em;white-space:nowrap}
+.badge.red{color:#ff8da1;background:rgba(255,77,109,.14);border:1px solid rgba(255,77,109,.35)}
+.badge.orange{color:#ffbd7a;background:rgba(255,159,67,.14);border:1px solid rgba(255,159,67,.35)}
+.badge.yellow{color:#ffe680;background:rgba(255,217,61,.13);border:1px solid rgba(255,217,61,.32)}
+.badge.blue{color:#8fd2ff;background:rgba(61,216,255,.12);border:1px solid rgba(61,216,255,.3)}
+.badge.green{color:#7df0b6;background:rgba(50,213,131,.12);border:1px solid rgba(50,213,131,.3)}
+.badge.gray{color:#9db4cf;background:rgba(157,180,207,.1);border:1px solid rgba(157,180,207,.25)}
+.toolbar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:16px}
+.toolbar select,.toolbar input{padding:9px 12px;border-radius:10px;border:1px solid var(--line2);
+  background:rgba(4,14,28,.8);color:var(--text);font-size:12.5px;outline:none}
+.toolbar select:focus,.toolbar input:focus{border-color:var(--cyan)}
+.toolbar .spacer{flex:1}
+.table-wrap{overflow:auto;border:1px solid var(--line);border-radius:14px;background:rgba(7,19,36,.6)}
+table{width:100%;border-collapse:collapse;font-size:12.5px;min-width:760px}
+thead th{text-align:left;padding:12px 14px;font-size:11.5px;color:var(--muted);font-weight:600;
+  letter-spacing:.05em;background:rgba(13,33,56,.72);white-space:nowrap;position:sticky;top:0}
+tbody td{padding:12px 14px;border-top:1px solid rgba(80,180,255,.08);vertical-align:middle}
+tbody tr{transition:.14s}
+tbody tr.clickable{cursor:pointer}
+tbody tr:hover{background:rgba(61,216,255,.045)}
+.cell-main{font-weight:600;font-size:12.5px}
+.cell-sub{font-size:11px;color:var(--muted);margin-top:3px}
+.empty{padding:54px 20px;text-align:center;color:var(--muted);font-size:13px}
+.empty b{display:block;color:#bcd4ec;margin-bottom:6px;font-size:14px}
+.actions{display:flex;gap:6px;flex-wrap:wrap}
+.tabs{display:flex;gap:6px;margin-bottom:14px;border-bottom:1px solid var(--line);padding-bottom:10px}
+.tab{padding:7px 14px;border-radius:9px;font-size:12.5px;color:var(--muted);cursor:pointer;border:1px solid transparent}
+.tab:hover{color:#dceeff}
+.tab.active{color:var(--cyan);background:rgba(61,216,255,.1);border-color:rgba(61,216,255,.25)}
+
+/* ---------- 场景 ---------- */
+.scenario-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(285px,1fr));gap:16px}
+.scenario{padding:20px;border:1px solid var(--line);border-radius:var(--radius);position:relative;
+  background:linear-gradient(155deg,rgba(13,33,56,.9),rgba(7,19,36,.92));overflow:hidden}
+.scenario::before{content:"";position:absolute;right:-40px;top:-40px;width:130px;height:130px;border-radius:50%;
+  background:radial-gradient(circle,rgba(61,216,255,.13),transparent 70%)}
+.scenario .group{font-size:10.5px;color:var(--cyan);letter-spacing:.1em;margin-bottom:9px}
+.scenario h4{font-size:15px;margin-bottom:8px}
+.scenario p{font-size:12px;color:var(--muted);line-height:1.7;min-height:42px}
+.scenario .run{margin-top:16px;display:flex;align-items:center;gap:10px}
+.scenario .run .btn{flex:1}
+.scenario .run small{font-size:10.5px;color:var(--faint)}
+.steps{display:flex;flex-direction:column;gap:12px;margin-top:6px}
+.step{display:flex;gap:12px}
+.step .idx{width:23px;height:23px;border-radius:50%;flex:0 0 auto;display:grid;place-items:center;
+  font-size:11px;font-weight:700;background:rgba(61,216,255,.14);color:var(--cyan);border:1px solid rgba(61,216,255,.3)}
+.step.fail .idx{background:rgba(255,77,109,.14);color:var(--red);border-color:rgba(255,77,109,.35)}
+.step b{font-size:12.5px;display:block;margin-bottom:3px}
+.step p{font-size:11.5px;color:var(--muted);line-height:1.6;word-break:break-all}
+.result-stats{display:flex;gap:10px;flex-wrap:wrap;margin:16px 0}
+.result-stats span{font-size:11.5px;color:var(--muted);padding:6px 11px;border-radius:8px;
+  background:rgba(61,216,255,.07);border:1px solid var(--line)}
+.result-stats b{color:var(--cyan);font-size:13px;margin-left:4px}
+audio{width:100%;margin-top:10px;height:36px}
+
+/* ---------- 弹窗 ---------- */
+.modal{position:fixed;inset:0;z-index:100;display:flex;align-items:center;justify-content:center;
+  background:rgba(2,8,17,.72);backdrop-filter:blur(5px);padding:22px}
+.modal-card{width:min(760px,96vw);max-height:88vh;overflow:auto;border:1px solid var(--line2);
+  border-radius:20px;background:linear-gradient(165deg,#0d2138,#07162a);box-shadow:var(--shadow);
+  animation:rise .22s ease}
+@keyframes rise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+.modal-head{display:flex;align-items:center;gap:12px;padding:20px 24px;border-bottom:1px solid var(--line);
+  position:sticky;top:0;background:rgba(10,26,48,.97);z-index:2}
+.modal-head h3{font-size:16px}
+.modal-head .close{margin-left:auto;width:32px;height:32px;border-radius:9px;border:1px solid var(--line);
+  background:transparent;color:var(--muted);font-size:18px;line-height:1}
+.modal-head .close:hover{color:var(--red);border-color:rgba(255,77,109,.4)}
+.modal-body{padding:22px 24px}
+.modal-foot{padding:16px 24px;border-top:1px solid var(--line);display:flex;gap:10px;justify-content:flex-end;
+  position:sticky;bottom:0;background:rgba(10,26,48,.97)}
+.kv{display:grid;grid-template-columns:96px 1fr;gap:10px 14px;font-size:12.5px}
+.kv dt{color:var(--muted)}
+.kv dd{line-height:1.6;word-break:break-all}
+.pose-box{margin-top:16px;border:1px solid var(--line);border-radius:12px;background:rgba(4,14,28,.6);
+  padding:10px;text-align:center}
+.pose-box svg{width:100%;max-width:460px;height:auto}
+.report{white-space:pre-wrap;font-family:"Consolas","SFMono-Regular",monospace;font-size:12px;
+  line-height:1.75;color:#bdd6ee;background:rgba(4,14,28,.7);border:1px solid var(--line);
+  border-radius:12px;padding:16px;max-height:420px;overflow:auto}
+.timeline{display:flex;flex-direction:column;gap:0;margin-top:4px}
+.tl-item{display:flex;gap:12px;padding:10px 0;border-left:2px solid var(--line2);padding-left:16px;
+  margin-left:5px;position:relative}
+.tl-item::before{content:"";position:absolute;left:-5px;top:15px;width:8px;height:8px;border-radius:50%;
+  background:var(--cyan);box-shadow:0 0 10px var(--cyan)}
+.tl-item .t{font-size:11px;color:var(--faint);flex:0 0 102px}
+.tl-item .c{font-size:12px;line-height:1.55}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.chip{display:inline-block;font-size:11px;color:var(--muted);padding:4px 9px;border-radius:7px;
+  background:rgba(61,216,255,.07);border:1px solid var(--line);margin:3px 4px 0 0}
+.notice{padding:12px 14px;border-radius:10px;font-size:12px;line-height:1.6;
+  background:rgba(255,159,67,.08);border:1px solid rgba(255,159,67,.24);color:#ffc891;margin-bottom:14px}
+
+/* ---------- toast ---------- */
+#toast{position:fixed;right:24px;bottom:24px;z-index:200;display:flex;flex-direction:column;gap:9px}
+.toast{padding:12px 18px;border-radius:11px;font-size:12.5px;border:1px solid var(--line2);
+  background:rgba(13,33,56,.96);box-shadow:var(--shadow);animation:rise .2s ease;max-width:360px}
+.toast.ok{border-color:rgba(50,213,131,.4);color:#9df3c4}
+.toast.err{border-color:rgba(255,77,109,.4);color:#ff9db0}
+
+@media (max-width:1280px){
+  .stats{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .overview-grid,.overview-grid2{grid-template-columns:1fr}
+}
+@media (max-width:900px){
+  .login-wrap{grid-template-columns:1fr}
+  .login-hero{display:none}
+  .app{grid-template-columns:1fr}
+  .sidebar{position:fixed;left:0;top:0;bottom:0;width:250px;transform:translateX(-100%);transition:.24s}
+  .sidebar.open{transform:none}
+  .view{padding:18px 16px 40px}
+  .topbar{padding:13px 16px}
+  .stats{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .page-title{font-size:16px}
+  .mobile-menu{display:inline-flex!important}
+}
+.mobile-menu{display:none;width:36px;height:36px;border-radius:10px;border:1px solid var(--line2);
+  background:rgba(13,33,56,.7);color:var(--text);align-items:center;justify-content:center;font-size:17px}
+</style>
+</head>
+<body>
+
+<!-- ============ 登录 ============ -->
+<div id="login" class="login-wrap">
+  <div class="login-hero">
+    <div class="hero-inner">
+      <div class="brand-mark">
+        <div class="brand-logo">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#3dd8ff" stroke-width="1.7"><path d="M12 2.5 4.5 6v6c0 4.8 3.2 8.2 7.5 9.5 4.3-1.3 7.5-4.7 7.5-9.5V6L12 2.5Z"/><path d="m8.7 12.1 2.2 2.2 4.5-4.6"/></svg>
+        </div>
+        <div>
+          <div class="brand-name">数智卫校 · CAMPUS SHIELD</div>
+          <div class="brand-sub">校园安全 AI 预警与干预系统</div>
+        </div>
+      </div>
+      <h1 class="hero-title">用 AI 看见风险<br><span>在伤害发生之前</span></h1>
+      <p class="hero-desc">依托计算机视觉与多模态大模型，对校园监控画面进行实时智能分析，精准识别霸凌、聚集冲突、摔倒等危险事件，自动触发分级预警，构建「行为检测 — 实时告警 — 智能干预 — 闭环归档」的完整业务链路。</p>
+      <div class="hero-points">
+        <div class="hero-point"><i class="dot"></i><div><b>实时视觉识别</b><p>姿态关键点时序分析，攻击 / 摔倒 / 围堵多事件并行判定</p></div></div>
+        <div class="hero-point"><i class="dot"></i><div><b>分级预警调度</b><p>红橙黄蓝四级响应，红色自动语音震慑并调度安保</p></div></div>
+        <div class="hero-point"><i class="dot"></i><div><b>多模态深判</b><p>语音转写 + 危险词库 + LLM 结构化研判报告</p></div></div>
+        <div class="hero-point"><i class="dot"></i><div><b>全流程留痕</b><p>事件、干预、工单、审计一体化归档，可追溯可复盘</p></div></div>
+      </div>
+    </div>
+  </div>
+  <div class="login-panel">
+    <div class="login-card">
+      <h2>登录安全工作台</h2>
+      <p class="tip">请使用校园安全平台账号登录</p>
+      <form id="loginForm" autocomplete="off">
+        <div class="field"><label>账号</label><input id="username" placeholder="请输入账号" required></div>
+        <div class="field"><label>密码</label><input id="password" type="password" placeholder="请输入密码" required></div>
+        <button class="btn primary block" type="submit">进入系统</button>
+      </form>
+      <div class="login-error" id="loginError"></div>
+      <div class="demo-users">
+        <span class="demo-user" data-u="admin" data-p="admin123">管理员 admin</span>
+        <span class="demo-user" data-u="leader" data-p="leader123">安保负责人 leader</span>
+        <span class="demo-user" data-u="security" data-p="security123">安保值班 security</span>
+        <span class="demo-user" data-u="teacher" data-p="teacher123">班主任 teacher</span>
+        <span class="demo-user" data-u="viewer" data-p="viewer123">访客 viewer</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ 主界面 ============ -->
+<div id="app" class="app hidden">
+  <aside class="sidebar" id="sidebar">
+    <div class="side-brand">
+      <div class="brand-logo"><svg viewBox="0 0 24 24" fill="none" stroke="#3dd8ff" stroke-width="1.7"><path d="M12 2.5 4.5 6v6c0 4.8 3.2 8.2 7.5 9.5 4.3-1.3 7.5-4.7 7.5-9.5V6L12 2.5Z"/><path d="m8.7 12.1 2.2 2.2 4.5-4.6"/></svg></div>
+      <div><b>数智卫校</b><span>CAMPUS SHIELD</span></div>
+    </div>
+    <nav class="nav" id="nav"></nav>
+    <div class="side-foot">AI 预警与干预平台 v2.0<br>数据本地存储 · 全链路留痕</div>
+  </aside>
+  <div class="main">
+    <header class="topbar">
+      <button class="mobile-menu" id="mobileMenu">☰</button>
+      <div><div class="page-title" id="pageTitle">态势总览</div><div class="page-sub" id="pageSub">校园安全运行状态</div></div>
+      <div class="topbar-right">
+        <div class="live"><i></i>实时监测中</div>
+        <div class="user-chip"><div class="avatar" id="avatar">A</div><div><b id="userName">-</b><span id="userRole">-</span></div></div>
+        <button class="btn small" id="logoutBtn">退出</button>
+      </div>
+    </header>
+    <section class="view" id="view"></section>
+  </div>
+</div>
+
+<div id="modal" class="modal hidden"><div class="modal-card">
+  <div class="modal-head"><h3 id="modalTitle">详情</h3><button class="close" data-close>×</button></div>
+  <div class="modal-body" id="modalBody"></div>
+  <div class="modal-foot" id="modalFoot"></div>
+</div></div>
+<div id="toast"></div>
+
+<script>
+/* ================= 基础工具 ================= */
+const API = '/api/v1';
+const state = { user: null, view: 'overview', alerts: [], filters: { status:'', severity:'', alert_type:'', q:'' }, eventFilters: { type:'', severity:'' }, eventsTab: 'events', timer: null };
+
+const $ = (id) => document.getElementById(id);
+const esc = (v) => String(v ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const fmtTime = (ts) => ts ? new Date(ts * 1000).toLocaleString('zh-CN', {hour12:false}) : '-';
+const hasPerm = (p) => (state.user?.permissions || []).includes(p);
+
+function toast(msg, type='ok') {
+  const node = document.createElement('div');
+  node.className = 'toast ' + type;
+  node.textContent = msg;
+  $('toast').appendChild(node);
+  setTimeout(() => node.remove(), 3200);
+}
+
+async function api(path, options = {}) {
+  const headers = { 'Content-Type': 'application/json', ...(options.headers || {}) };
+  const token = localStorage.getItem('campus_token');
+  if (token) headers.Authorization = 'Bearer ' + token;
+  const res = await fetch(API + path, { ...options, headers });
+  let body = {};
+  try { body = await res.json(); } catch (e) { body = {}; }
+  if (res.status === 401) { logout(false); throw new Error(body.error || '登录已过期'); }
+  if (!res.ok || body.code !== 0) throw new Error(body.error || ('请求失败 ' + res.status));
+  return body.data;
+}
+
+/* ================= 登录 ================= */
+document.querySelectorAll('.demo-user').forEach(el => {
+  el.addEventListener('click', () => { $('username').value = el.dataset.u; $('password').value = el.dataset.p; });
+});
+
+$('loginForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  $('loginError').textContent = '';
+  try {
+    const data = await api('/auth/login', { method:'POST', body: JSON.stringify({ username: $('username').value.trim(), password: $('password').value }) });
+    localStorage.setItem('campus_token', data.token);
+    state.user = data.user;
+    enterApp();
+  } catch (err) {
+    $('loginError').textContent = err.message;
+  }
+});
+
+function logout(showMsg = true) {
+  const token = localStorage.getItem('campus_token');
+  if (token) api('/auth/logout', { method:'POST' }).catch(() => {});
+  localStorage.removeItem('campus_token');
+  state.user = null;
+  if (state.timer) clearInterval(state.timer);
+  $('app').classList.add('hidden');
+  $('login').classList.remove('hidden');
+  if (showMsg) toast('已退出登录');
+}
+$('logoutBtn').addEventListener('click', () => logout());
+$('mobileMenu').addEventListener('click', () => $('sidebar').classList.toggle('open'));
+
+/* ================= 导航 ================= */
+const ICONS = {
+  overview:'<path d="M3 12h7V3H3v9Zm0 9h7v-6H3v6Zm11 0h7V12h-7v9Zm0-18v6h7V3h-7Z"/>',
+  alerts:'<path d="M12 3 2.5 20h19L12 3Z"/><path d="M12 9v5m0 3v.5"/>',
+  events:'<path d="M5 3h11l4 4v14H5V3Z"/><path d="M9 9h7M9 13h7M9 17h4"/>',
+  orders:'<path d="M4 6h16v14H4z"/><path d="M8 3v5M16 3v5M8 12h8M8 16h5"/>',
+  scenarios:'<path d="M12 2v4m0 12v4M2 12h4m12 0h4"/><circle cx="12" cy="12" r="4.5"/>',
+  devices:'<rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="12" cy="12" r="3.2"/><path d="M8 5V3m8 2V3"/>',
+  users:'<circle cx="9" cy="8" r="3.4"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/><path d="M16 4.5a3.4 3.4 0 0 1 0 6.6M17 14c2.6.5 4 2.6 4 6"/>',
+  audit:'<path d="M4 4h16v16H4z"/><path d="M8 9h8M8 13h8M8 17h5"/>',
+  metrics:'<path d="M4 20V9m5 11V4m5 16v-7m5 7V7"/>',
+  seat:'<path d="M5 10V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v5"/><path d="M3 10h18v6H3z"/><path d="M6 16v4m12-4v4"/>'
+};
+const NAV = [
+  { id:'overview', label:'态势总览', perm:'event.view', sub:'校园安全运行状态' },
+  { id:'alerts', label:'预警中心', perm:'alert.view', sub:'实时预警与分级处置' },
+  { id:'events', label:'事件中心', perm:'event.view', sub:'事件归档与推送记录' },
+  { id:'orders', label:'工单闭环', perm:'order.view', sub:'工单受理与处置闭环' },
+  { id:'scenarios', label:'智能场景', perm:'event.view', sub:'AI 能力演示与验证' },
+  { id:'devices', label:'设备管理', perm:'device.view', sub:'摄像头 / 对讲 / 报警设备' },
+  { id:'users', label:'用户与权限', perm:'user.manage', sub:'账号与角色权限' },
+  { id:'audit', label:'审计日志', perm:'audit.view', sub:'关键操作留痕' },
+  { id:'metrics', label:'运行指标', perm:'metrics.view', sub:'服务与业务指标' }
+];
+
+function buildNav() {
+  $('nav').innerHTML = NAV.filter(n => hasPerm(n.perm)).map(n =>
+    `<div class="nav-item" data-view="${n.id}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">${ICONS[n.id]}</svg>${n.label}</div>`
+  ).join('');
+  document.querySelectorAll('.nav-item').forEach(el => el.addEventListener('click', () => go(el.dataset.view)));
+}
+
+async function enterApp() {
+  $('login').classList.add('hidden');
+  $('app').classList.remove('hidden');
+  $('userName').textContent = state.user.name || state.user.username;
+  $('userRole').textContent = state.user.role_label || state.user.role;
+  $('avatar').textContent = (state.user.name || state.user.username).slice(0, 1);
+  buildNav();
+  go('overview');
+  if (state.timer) clearInterval(state.timer);
+  state.timer = setInterval(() => { if (state.view === 'overview') loadOverview(true); }, 20000);
+}
+
+/* ================= 视图路由 ================= */
+async function go(view) {
+  state.view = view;
+  const meta = NAV.find(n => n.id === view) || NAV[0];
+  $('pageTitle').textContent = meta.label;
+  $('pageSub').textContent = meta.sub;
+  document.querySelectorAll('.nav-item').forEach(el => el.classList.toggle('active', el.dataset.view === view));
+  $('sidebar').classList.remove('open');
+  $('view').innerHTML = `<div class="empty">加载中…</div>`;
+  try {
+    if (view === 'overview') await loadOverview();
+    else if (view === 'alerts') await loadAlerts();
+    else if (view === 'events') await loadEvents();
+    else if (view === 'orders') await loadOrders();
+    else if (view === 'scenarios') await loadScenarios();
+    else if (view === 'devices') await loadDevices();
+    else if (view === 'users') await loadUsers();
+    else if (view === 'audit') await loadAudit();
+    else if (view === 'metrics') await loadMetrics();
+  } catch (err) {
+    $('view').innerHTML = `<div class="empty"><b>加载失败</b>${esc(err.message)}</div>`;
+  }
+}
+
+/* ================= 态势总览 ================= */
+async function loadOverview(quiet = false) {
+  if (!quiet) $('view').innerHTML = `<div class="empty">加载中…</div>`;
+  const d = await api('/overview');
+  const s = d.stats;
+  const sev = d.severity;
+  const cards = [
+    { k:'今日预警', v:s.alerts_today, cls:'cyan', note:'24h 内新增' },
+    { k:'待处置', v:s.pending, cls:'orange', note:'含受理 / 干预中' },
+    { k:'红色预警', v:s.red_open, cls:'red', note:'未闭环紧急事件' },
+    { k:'干预记录', v:s.interventions, cls:'green', note:'人工 + 智能干预' },
+    { k:'待办工单', v:s.orders_pending, cls:'yellow', note:'图书馆占座等' },
+    { k:'在线设备', v:`${s.devices_online}/${s.devices_total}`, cls:'cyan', note:'摄像头/对讲/报警' }
+  ];
+  const trend = svgTrend(d.trend);
+  const sevTotal = Object.values(sev).reduce((a,b)=>a+b,0) || 1;
+  const sevRows = [['red','红色'],['orange','橙色'],['yellow','黄色'],['blue','蓝色']].map(([k,label]) =>
+    `<div class="sev-row"><span class="name">${label}</span><div class="sev-bar"><i style="width:${(sev[k]/sevTotal*100).toFixed(1)}%;background:var(--${k})"></i></div><span class="num">${sev[k]}</span></div>`
+  ).join('');
+  const typeEntries = Object.entries(d.types).filter(([,v]) => v > 0).sort((a,b)=>b[1]-a[1]);
+  const typeMax = Math.max(1, ...typeEntries.map(([,v])=>v));
+  const typeRows = typeEntries.length ? typeEntries.map(([k,v]) =>
+    `<div class="sev-row"><span class="name" style="width:78px">${esc(TYPE_CN[k]||k)}</span><div class="sev-bar"><i style="width:${(v/typeMax*100).toFixed(1)}%;background:linear-gradient(90deg,var(--cyan),var(--blue))"></i></div><span class="num">${v}</span></div>`
+  ).join('') : `<div class="empty" style="padding:26px 0">暂无预警数据，运行智能场景后生成</div>`;
+  const cams = d.cameras.map(c => `
+    <div class="cam">
+      <div class="cam-top"><i class="status-dot ${c.status==='online'?'':'offline'}"></i><b>${esc(c.device_id)}</b></div>
+      <div class="cam-loc">${esc(c.location)}</div>
+      <div class="cam-meta"><span>今日 ${c.alerts_today} 条</span><span>${c.last_alert ? '最近 '+esc(c.last_alert) : '无预警'}</span></div>
+    </div>`).join('');
+  const latest = d.latest.length ? d.latest.map(a => `
+    <div class="latest-item" data-alert="${esc(a.alert_id)}">
+      <div class="latest-time">${esc(a.occurred_text.slice(5,16))}</div>
+      <div style="min-width:0"><div class="latest-sum">${esc(a.summary)}</div>
+        <div class="latest-meta"><span class="badge ${a.severity}">${esc(a.severity_label)}</span> · ${esc(a.location)} · ${esc(a.status_label)}</div></div>
+    </div>`).join('') : `<div class="empty" style="padding:30px 0">暂无预警记录</div>`;
+
+  $('view').innerHTML = `
+    <div class="grid stats">${cards.map(c=>`<div class="stat ${c.cls}"><div class="k">${c.k}</div><div class="v">${c.v}</div><div class="k" style="margin-top:7px">${c.note}</div></div>`).join('')}</div>
+    <div class="overview-grid">
+      <div class="card"><div class="card-head"><h4>24 小时预警趋势</h4><span class="sub">按小时聚合</span></div><div class="chart-wrap">${trend}</div></div>
+      <div class="card"><div class="card-head"><h4>预警级别分布</h4><span class="sub">共 ${sevTotal} 条</span></div>${sevRows}
+        <div class="card-head" style="margin-top:22px"><h4>事件类型分布</h4></div>${typeRows}</div>
+    </div>
+    <div class="overview-grid2">
+      <div class="card"><div class="card-head"><h4>前端感知设备</h4><span class="sub">${s.devices_online}/${s.devices_total} 在线</span></div><div class="cam-grid">${cams}</div></div>
+      <div class="card"><div class="card-head"><h4>最新预警</h4><span class="sub">点击查看处置</span></div>${latest}</div>
+    </div>`;
+  bindOverviewClicks();
+}
+
+function bindOverviewClicks() {
+  document.querySelectorAll('[data-alert]').forEach(el => el.addEventListener('click', () => openAlert(el.dataset.alert)));
+}
+
+const TYPE_CN = { attack:'暴力攻击', fall:'人员摔倒', surround:'多人围堵', bullying:'霸凌冲突', danger_word:'危险言语', seat:'占座事件', behavior:'行为违规' };
+
+function svgTrend(points) {
+  const W = 720, H = 200, P = 26;
+  const max = Math.max(3, ...points.map(p => p.count));
+  const stepX = (W - P * 2) / Math.max(1, points.length - 1);
+  const coords = points.map((p, i) => [P + i * stepX, H - P - (p.count / max) * (H - P * 2)]);
+  const line = coords.map(([x,y],i) => `${i?'L':'M'}${x.toFixed(1)} ${y.toFixed(1)}`).join(' ');
+  const area = `${line} L${coords[coords.length-1][0].toFixed(1)} ${H-P} L${P} ${H-P} Z`;
+  const grid = [0,.25,.5,.75,1].map(r => `<line x1="${P}" y1="${(P+(H-2*P)*r).toFixed(1)}" x2="${W-P}" y2="${(P+(H-2*P)*r).toFixed(1)}" stroke="rgba(80,180,255,.09)" stroke-dasharray="3 5"/>`).join('');
+  const labels = points.map((p,i) => (i % 4 === 0) ? `<text x="${coords[i][0]}" y="${H-7}" fill="#5c7895" font-size="10" text-anchor="middle">${p.label}</text>` : '').join('');
+  const dots = coords.map(([x,y],i) => points[i].count ? `<circle cx="${x}" cy="${y}" r="3.2" fill="#3dd8ff"/>` : '').join('');
+  return `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" style="height:200px">
+    <defs><linearGradient id="areaFill" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="rgba(61,216,255,.34)"/><stop offset="100%" stop-color="rgba(61,216,255,0)"/></linearGradient></defs>
+    ${grid}<path d="${area}" fill="url(#areaFill)"/><path d="${line}" fill="none" stroke="#3dd8ff" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round"/>${dots}${labels}
+  </svg>`;
+}
+
+/* ================= 预警中心 ================= */
+async function loadAlerts() {
+  const qs = new URLSearchParams();
+  if (state.filters.status) qs.set('status', state.filters.status);
+  if (state.filters.severity) qs.set('severity', state.filters.severity);
+  if (state.filters.alert_type) qs.set('alert_type', state.filters.alert_type);
+  if (state.filters.q) qs.set('q', state.filters.q);
+  qs.set('limit', '100');
+  const d = await api('/alerts?' + qs.toString());
+  const rows = d.records.map(a => `
+    <tr class="clickable" data-alert="${esc(a.alert_id)}">
+      <td><span class="badge ${a.severity}">${esc(a.severity_label)}</span></td>
+      <td><div class="cell-main">${esc(a.type_label)}</div><div class="cell-sub">${esc(a.alert_id)}</div></td>
+      <td><div class="cell-main" style="font-weight:500">${esc(a.summary)}</div><div class="cell-sub">${esc(a.location)} · ${esc(a.camera_id)}</div></td>
+      <td>${(a.confidence*100).toFixed(0)}%</td>
+      <td><span class="badge ${a.status==='closed'?'gray':'blue'}">${esc(a.status_label)}</span></td>
+      <td style="white-space:nowrap">${esc(a.occurred_text)}</td>
+    </tr>`).join('');
+  $('view').innerHTML = `
+    <div class="toolbar">
+      <select id="fSeverity"><option value="">全部级别</option><option value="red">红色</option><option value="orange">橙色</option><option value="yellow">黄色</option><option value="blue">蓝色</option></select>
+      <select id="fStatus"><option value="">全部状态</option><option value="pending">待受理</option><option value="acknowledged">已受理</option><option value="intervening">干预中</option><option value="closed">已闭环</option></select>
+      <select id="fType"><option value="">全部类型</option>${Object.entries(TYPE_CN).map(([k,v])=>`<option value="${k}">${v}</option>`).join('')}</select>
+      <input id="fQ" placeholder="搜索摘要 / 地点" value="${esc(state.filters.q)}" style="width:200px">
+      <button class="btn small" data-act="filter">筛选</button>
+      <button class="btn small" data-act="reset">重置</button>
+      <span class="spacer"></span>
+      <span class="hint" style="font-size:11.5px;color:var(--muted)">共 ${d.total} 条预警</span>
+      <button class="btn small" data-act="refresh">刷新</button>
+    </div>
+    <div class="table-wrap">${d.records.length ? `<table><thead><tr><th>级别</th><th>类型</th><th>摘要</th><th>置信度</th><th>状态</th><th>发生时间</th></tr></thead><tbody>${rows}</tbody></table>` : `<div class="empty"><b>暂无预警</b>可前往「智能场景」运行视觉预警演示</div>`}</div>`;
+  ['fSeverity','fStatus','fType'].forEach(id => { const el = $(id); if (el) el.value = state.filters[id === 'fSeverity' ? 'severity' : id === 'fStatus' ? 'status' : 'alert_type'] || ''; });
+  document.querySelectorAll('[data-alert]').forEach(el => el.addEventListener('click', () => openAlert(el.dataset.alert)));
+  document.querySelectorAll('[data-act]').forEach(el => el.addEventListener('click', () => {
+    if (el.dataset.act === 'filter') {
+      state.filters.severity = $('fSeverity').value; state.filters.status = $('fStatus').value;
+      state.filters.alert_type = $('fType').value; state.filters.q = $('fQ').value.trim();
+      loadAlerts();
+    } else if (el.dataset.act === 'reset') { state.filters = { status:'', severity:'', alert_type:'', q:'' }; loadAlerts(); }
+    else loadAlerts();
+  }));
+}
+
+/* ================= 预警详情 / 处置 ================= */
+async function openAlert(alertId) {
+  openModal('预警详情', `<div class="empty">加载中…</div>`, '');
+  try {
+    const a = await api('/alerts/' + encodeURIComponent(alertId));
+    const ev = a.evidence || {};
+    const persons = (ev.snapshot && ev.snapshot.persons) || [];
+    const signals = (ev.signals || []).map(s => `<span class="chip">${esc(s.signal_type)} · P${s.person} · ${Math.round(s.confidence*100)}%</span>`).join('') || '<span class="chip">无</span>';
+    const advice = (ev.advice || []).map((x,i) => `<div class="tl-item"><span class="t">建议 ${i+1}</span><span class="c">${esc(x)}</span></div>`).join('');
+    const interventions = (a.interventions || []).map(it => `<div class="tl-item"><span class="t">${fmtTime(it.created_at)}</span><span class="c">${esc(it.operator)} · ${ACTION_CN[it.kind]||it.kind}${it.content ? '：'+esc(it.content) : ''}</span></div>`).join('') || '<div class="tl-item"><span class="t">-</span><span class="c">暂无干预记录</span></div>';
+    const body = `
+      <div class="notice" style="display:flex;gap:12px;align-items:center;flex-wrap:wrap">
+        <span class="badge ${a.severity}">${esc(a.severity_label)}</span>
+        <span class="badge blue">${esc(a.type_label)}</span>
+        <span class="badge gray">${esc(a.status_label)}</span>
+        <span style="font-size:12px;color:var(--muted)">置信度 ${(a.confidence*100).toFixed(0)}% · ${esc(a.occurred_text)}</span>
+      </div>
+      <dl class="kv">
+        <dt>预警编号</dt><dd>${esc(a.alert_id)}</dd>
+        <dt>事件编号</dt><dd>${esc(a.event_id)}</dd>
+        <dt>发生地点</dt><dd>${esc(a.location)}</dd>
+        <dt>设备编号</dt><dd>${esc(a.camera_id)}</dd>
+        <dt>事件摘要</dt><dd>${esc(a.summary)}</dd>
+        <dt>检测信号</dt><dd>${signals}</dd>
+      </dl>
+      ${persons.length ? `<div class="pose-box">${poseSvg(persons)}<div style="font-size:11px;color:var(--muted);margin-top:6px">末帧姿态关键点还原（COCO-17）</div></div>` : ''}
+      <div class="card-head" style="margin:20px 0 6px"><h4>智能处置建议</h4></div>
+      <div class="timeline">${advice || '<div class="tl-item"><span class="t">-</span><span class="c">暂无建议</span></div>'}</div>
+      <div class="card-head" style="margin:20px 0 6px"><h4>干预记录</h4></div>
+      <div class="timeline">${interventions}</div>
+      <div class="card-head" style="margin:20px 0 6px"><h4>结构化研判报告</h4></div>
+      <div class="report">${esc(a.report_text || '')}</div>`;
+    const canHandle = hasPerm('alert.handle');
+    const foot = canHandle && a.status !== 'closed' ? `
+      ${a.status === 'pending' ? `<button class="btn" data-ack="${esc(a.alert_id)}">受理预警</button>` : ''}
+      <button class="btn" data-intervene="${esc(a.alert_id)}">记录干预</button>
+      <button class="btn danger" data-close-alert="${esc(a.alert_id)}">闭环归档</button>` : `<button class="btn" data-close>关闭</button>`;
+    openModal(`预警详情 · ${a.alert_id}`, body, foot, false);
+    bindAlertActions(a.alert_id);
+  } catch (err) {
+    openModal('预警详情', `<div class="empty"><b>加载失败</b>${esc(err.message)}</div>`, '<button class="btn" data-close>关闭</button>');
+  }
+}
+
+const ACTION_CN = { ack:'受理', voice:'语音震慑', dispatch:'调度安保', notify:'通知领导', onsite:'现场处置', close:'闭环归档' };
+
+function poseSvg(persons) {
+  const EDGES = [[5,7],[7,9],[6,8],[8,10],[5,6],[5,11],[6,12],[11,12],[11,13],[13,15],[12,14],[14,16],[0,1],[0,2],[1,3],[2,4],[0,5],[0,6]];
+  const colors = ['#3dd8ff','#ff9f43','#a78bfa','#32d583'];
+  const parts = persons.map((p, idx) => {
+    if (!Array.isArray(p) || p.length < 17) return '';
+    const c = colors[idx % colors.length];
+    const lines = EDGES.map(([a,b]) => `<line x1="${p[a][0]}" y1="${p[a][1]}" x2="${p[b][0]}" y2="${p[b][1]}" stroke="${c}" stroke-width="2.4" opacity=".9"/>`).join('');
+    const dots = p.map(pt => `<circle cx="${pt[0]}" cy="${pt[1]}" r="3.4" fill="#07162a" stroke="${c}" stroke-width="2"/>`).join('');
+    return `<g>${lines}${dots}<text x="${p[0][0]}" y="${p[0][1]-14}" fill="${c}" font-size="12" text-anchor="middle">P${idx}</text></g>`;
+  }).join('');
+  return `<svg viewBox="0 0 640 420" preserveAspectRatio="xMidYMid meet"><rect width="640" height="420" fill="rgba(4,14,28,.5)" rx="10"/><g transform="translate(0,-20)">${parts}</g></svg>`;
+}
+
+function bindAlertActions(alertId) {
+  const ack = document.querySelector('[data-ack]');
+  if (ack) ack.addEventListener('click', async () => {
+    try { await api('/alerts/' + alertId + '/ack', { method:'POST' }); toast('预警已受理'); openAlert(alertId); loadAlerts(); }
+    catch (e) { toast(e.message, 'err'); }
+  });
+  const iv = document.querySelector('[data-intervene]');
+  if (iv) iv.addEventListener('click', () => openIntervene(alertId));
+  const cl = document.querySelector('[data-close-alert]');
+  if (cl) cl.addEventListener('click', () => openCloseAlert(alertId));
+}
+
+function openIntervene(alertId) {
+  const body = `
+    <p style="font-size:12.5px;color:var(--muted);line-height:1.7;margin-bottom:14px">选择干预方式并填写处置说明，记录将写入干预时间线与审计日志。</p>
+    <div class="grid" style="grid-template-columns:1fr 1fr;gap:10px">
+      ${[['voice','语音震慑','现场播放制止话术'],['dispatch','调度安保','派员赶赴现场'],['notify','通知领导','推送班主任/值班领导'],['onsite','现场处置','值班人员现场处理']].map(([k,t,d]) =>
+        `<button class="btn" data-kind="${k}" style="flex-direction:column;align-items:flex-start;padding:14px"><b>${t}</b><small style="color:var(--muted);font-weight:400;margin-top:4px">${d}</small></button>`).join('')}
+    </div>
+    <div class="field" style="margin-top:14px"><label>处置说明</label><textarea id="ivContent" rows="3" placeholder="例如：已调度 2 名安保人员前往现场"></textarea></div>`;
+  openModal('记录干预', body, `<button class="btn" data-close>取消</button>`, false);
+  document.querySelectorAll('[data-kind]').forEach(btn => btn.addEventListener('click', async () => {
+    try {
+      await api('/alerts/' + alertId + '/intervene', { method:'POST', body: JSON.stringify({ kind: btn.dataset.kind, content: $('ivContent').value.trim() }) });
+      toast('干预已记录'); closeModal(); openAlert(alertId);
+    } catch (e) { toast(e.message, 'err'); }
+  }));
+}
+
+function openCloseAlert(alertId) {
+  openModal('闭环归档', `
+    <p style="font-size:12.5px;color:var(--muted);line-height:1.7;margin-bottom:14px">确认现场处置完成后闭环该预警，闭环记录不可撤回。</p>
+    <div class="field"><label>处置结果</label><textarea id="closeResult" rows="3" placeholder="例如：现场已隔离涉事学生，通知家长，完成教育谈话"></textarea></div>`,
+    `<button class="btn" data-close>取消</button><button class="btn primary" id="doClose">确认闭环</button>`, false);
+  $('doClose').addEventListener('click', async () => {
+    try {
+      await api('/alerts/' + alertId + '/close', { method:'POST', body: JSON.stringify({ result: $('closeResult').value.trim() || '现场处置完成' }) });
+      toast('预警已闭环'); closeModal(); loadAlerts();
+    } catch (e) { toast(e.message, 'err'); }
+  });
+}
+
+/* ================= 事件中心 ================= */
+async function loadEvents() {
+  const tab = state.eventsTab;
+  const content = tab === 'events'
+    ? await renderEventsTable(state.eventFilters.type, state.eventFilters.severity)
+    : await renderPushesTable();
+  $('view').innerHTML = `
+    <div class="tabs">
+      <div class="tab ${tab==='events'?'active':''}" data-tab="events">事件归档</div>
+      <div class="tab ${tab==='pushes'?'active':''}" data-tab="pushes">推送记录</div>
+    </div>${content}`;
+  document.querySelectorAll('[data-tab]').forEach(el => el.addEventListener('click', () => { state.eventsTab = el.dataset.tab; loadEvents(); }));
+  if (tab === 'events' && $('eFilter')) {
+    $('eFilter').addEventListener('click', () => {
+      state.eventFilters = { type: $('eType').value, severity: $('eSev').value };
+      loadEvents();
+    });
+  }
+}
+
+async function renderEventsTable(type = '', severity = '') {
+  const qs = new URLSearchParams({ limit:'100' });
+  if (type) qs.set('event_type', type);
+  if (severity) qs.set('severity', severity);
+  const d = await api('/events?' + qs.toString());
+  const rows = d.records.map(e => `<tr>
+    <td><span class="badge ${e.severity}">${esc(e.severity)}</span></td>
+    <td><span class="badge gray">${esc(EVENT_CN[e.event_type]||e.event_type)}</span></td>
+    <td><div class="cell-main" style="font-weight:500">${esc(e.summary)}</div><div class="cell-sub">${esc(e.location)}</div></td>
+    <td>${esc(e.source)}</td><td style="white-space:nowrap">${esc(e.created_text)}</td></tr>`).join('');
+  return `<div class="toolbar">
+      <select id="eType"><option value="">全部类型</option>${Object.entries(EVENT_CN).map(([k,v])=>`<option value="${k}" ${type===k?'selected':''}>${v}</option>`).join('')}</select>
+      <select id="eSev"><option value="">全部级别</option>${['red','orange','yellow','blue'].map(v=>`<option value="${v}" ${severity===v?'selected':''}>${v}</option>`).join('')}</select>
+      <button class="btn small" id="eFilter">筛选</button><span class="spacer"></span>
+      <span style="font-size:11.5px;color:var(--muted)">共 ${d.total} 条</span></div>
+    <div class="table-wrap">${d.records.length ? `<table><thead><tr><th>级别</th><th>类型</th><th>摘要</th><th>来源</th><th>时间</th></tr></thead><tbody>${rows}</tbody></table>` : `<div class="empty"><b>暂无事件</b>事件将在预警与场景运行后自动归档</div>`}</div>`;
+}
+const EVENT_CN = { alert:'预警事件', work_order:'占座工单', violation:'行为违规', report:'研判报告', deterrence:'口头制止' };
+
+async function renderPushesTable() {
+  const d = await api('/pushes');
+  const rows = d.records.map(p => `<tr>
+    <td><span class="badge ${p.severity}">${esc(p.severity)}</span></td>
+    <td>${esc(p.summary)}</td>
+    <td>${(p.targets||[]).map(t=>`<span class="chip">${esc(t)}</span>`).join('') || '-'}</td>
+    <td style="white-space:nowrap">${esc(p.created_text)}</td></tr>`).join('');
+  return `<div class="table-wrap">${d.records.length ? `<table><thead><tr><th>级别</th><th>推送摘要</th><th>推送对象</th><th>时间</th></tr></thead><tbody>${rows}</tbody></table>` : `<div class="empty"><b>暂无推送记录</b>告警触发后自动生成定向推送</div>`}</div>`;
+}
+
+/* ================= 工单闭环 ================= */
+async function loadOrders() {
+  const d = await api('/orders');
+  const rows = d.records.map(o => `<tr>
+    <td><div class="cell-main">${esc(o.seat_id)}</div><div class="cell-sub">${esc(o.event_id)}</div></td>
+    <td>${esc(o.location)}</td>
+    <td><span class="badge ${o.status==='pending'?'yellow':'green'}">${o.status==='pending'?'待处理':'已闭环'}</span></td>
+    <td style="white-space:nowrap">${esc(o.created_text)}</td>
+    <td>${o.status==='pending' && hasPerm('order.close') ? `<button class="btn small" data-order="${esc(o.event_id)}">闭环</button>` : '-'}</td>
+  </tr>`).join('');
+  $('view').innerHTML = `
+    <div class="toolbar"><span class="badge blue">图书馆占座扩展场景</span><span class="spacer"></span>
+      ${hasPerm('scenario.run')?`<button class="btn small" data-run-seat>运行占座演示</button>`:''}
+      <button class="btn small" data-refresh-order>刷新</button></div>
+    <div class="table-wrap">${d.records.length ? `<table><thead><tr><th>座位 / 工单</th><th>区域</th><th>状态</th><th>创建时间</th><th>操作</th></tr></thead><tbody>${rows}</tbody></table>` : `<div class="empty"><b>暂无工单</b>运行占座演示后自动生成待处理工单</div>`}</div>`;
+  document.querySelectorAll('[data-order]').forEach(btn => btn.addEventListener('click', async () => {
+    try { await api('/orders/' + encodeURIComponent(btn.dataset.order) + '/close', { method:'POST' }); toast('工单已闭环'); loadOrders(); }
+    catch (e) { toast(e.message, 'err'); }
+  }));
+  document.querySelectorAll('[data-refresh-order]').forEach(b => b.addEventListener('click', loadOrders));
+  document.querySelectorAll('[data-run-seat]').forEach(b => b.addEventListener('click', () => runScenario('seat')));
+}
+
+/* ================= 智能场景 ================= */
+async function loadScenarios() {
+  const d = await api('/scenarios');
+  const groups = {};
+  d.scenarios.forEach(s => (groups[s.group] = groups[s.group] || []).push(s));
+  const html = Object.entries(groups).map(([g, items]) => `
+    <div class="section-head" style="margin-top:8px"><h3>${esc(g)}</h3><div class="line"></div></div>
+    <div class="scenario-grid">${items.map(s => `
+      <div class="scenario"><div class="group">${esc(s.group)}</div><h4>${esc(s.title)}</h4><p>${esc(s.desc)}</p>
+        <div class="run"><button class="btn primary" data-run="${esc(s.name)}" ${hasPerm('scenario.run')?'':'disabled'}>运行场景</button><small>${s.name}</small></div>
+      </div>`).join('')}</div>`).join('');
+  $('view').innerHTML = `<div class="notice">场景演示基于真实算法链路：视觉场景由姿态关键点实时判定，语音场景读取 audio_assets 真实音频，结果自动写入预警中心与事件归档。</div>${html}`;
+  document.querySelectorAll('[data-run]').forEach(btn => btn.addEventListener('click', () => runScenario(btn.dataset.run)));
+}
+
+async function runScenario(name) {
+  openModal('场景运行中', `<div class="empty">正在执行算法链路，请稍候…</div>`, '', true);
+  try {
+    const r = await api('/scenarios/' + encodeURIComponent(name), { method:'POST' });
+    const steps = r.steps.map((s,i) => `<div class="step ${s.ok?'':'fail'}"><div class="idx">${i+1}</div><div><b>${esc(s.label)}</b><p>${esc(s.detail)}</p></div></div>`).join('');
+    const counts = `<div class="result-stats"><span>预警<b>${r.alerts.length}</b></span><span>事件<b>${r.events.length}</b></span><span>推送<b>${r.pushes.length}</b></span><span>工单<b>${r.orders.length}</b></span><span>违规<b>${r.violations.length}</b></span></div>`;
+    const audio = (r.audio||[]).map(a => `<div style="margin-top:8px"><div style="font-size:11.5px;color:var(--muted);margin-bottom:5px">${esc(a.label)}</div><audio controls src="${esc(a.src)}"></audio></div>`).join('');
+    const report = r.report_text ? `<div class="card-head" style="margin:20px 0 8px"><h4>生成报告</h4></div><div class="report">${esc(r.report_text)}</div>` : '';
+    openModal(r.title || '场景结果', `${counts}<div class="steps">${steps}</div>${audio}${report}`,
+      `${r.alerts.length ? `<button class="btn primary" data-open-alert="${esc(r.alerts[0].alert_id)}">查看预警详情</button>` : ''}<button class="btn" data-close>关闭</button>`);
+    const openBtn = document.querySelector('[data-open-alert]');
+    if (openBtn) openBtn.addEventListener('click', () => openAlert(openBtn.dataset.openAlert));
+    toast('场景执行完成');
+    if (state.view === 'overview') loadOverview(true);
+  } catch (err) {
+    openModal('场景执行失败', `<div class="empty"><b>执行失败</b>${esc(err.message)}</div>`, '<button class="btn" data-close>关闭</button>');
+  }
+}
+
+/* ================= 设备 ================= */
+async function loadDevices() {
+  const d = await api('/devices');
+  const rows = d.records.map(v => `<tr>
+    <td><div class="cell-main">${esc(v.device_id)}</div></td>
+    <td><span class="badge gray">${TYPE_DEV[v.dtype]||v.dtype}</span></td>
+    <td>${esc(v.location)}</td>
+    <td><i class="status-dot ${v.status==='online'?'':'offline'}" style="display:inline-block;margin-right:6px"></i>${v.status==='online'?'在线':'离线'}</td></tr>`).join('');
+  const form = hasPerm('device.manage') ? `<div class="card" style="margin-bottom:16px"><div class="card-head"><h4>新增设备</h4></div>
+    <div class="form-row"><div class="field"><label>设备编号</label><input id="dId" placeholder="dorm-cam-03"></div>
+    <div class="field"><label>类型</label><select id="dType"><option value="camera">摄像头</option><option value="intercom">对讲</option><option value="alarm">报警器</option></select></div>
+    <div class="field"><label>安装位置</label><input id="dLoc" placeholder="宿舍楼B座3层楼道"></div>
+    <div class="field" style="display:flex;align-items:flex-end"><button class="btn primary block" id="dAdd">添加设备</button></div></div></div>` : '';
+  $('view').innerHTML = `${form}<div class="table-wrap"><table><thead><tr><th>设备编号</th><th>类型</th><th>位置</th><th>状态</th></tr></thead><tbody>${rows}</tbody></table></div>`;
+  if (hasPerm('device.manage')) $('dAdd').addEventListener('click', async () => {
+    try {
+      await api('/devices', { method:'POST', body: JSON.stringify({ device_id:$('dId').value.trim(), dtype:$('dType').value, location:$('dLoc').value.trim() }) });
+      toast('设备已添加'); loadDevices();
+    } catch (e) { toast(e.message, 'err'); }
+  });
+}
+const TYPE_DEV = { camera:'摄像头', intercom:'对讲设备', alarm:'报警装置' };
+
+/* ================= 用户 ================= */
+async function loadUsers() {
+  const d = await api('/users');
+  const rows = d.records.map(u => `<tr>
+    <td><div class="cell-main">${esc(u.username)}</div><div class="cell-sub">${esc(u.name)}</div></td>
+    <td><span class="badge blue">${esc(u.role_label)}</span></td>
+    <td>${u.enabled ? '<span class="badge green">启用</span>' : '<span class="badge gray">停用</span>'}</td>
+    <td style="white-space:nowrap">${fmtTime(u.created_at)}</td></tr>`).join('');
+  $('view').innerHTML = `
+    <div class="card" style="margin-bottom:16px"><div class="card-head"><h4>新增账号</h4><span class="sub">密码至少 6 位</span></div>
+      <div class="form-row"><div class="field"><label>账号</label><input id="uName" placeholder="登录账号"></div>
+      <div class="field"><label>姓名</label><input id="uReal" placeholder="真实姓名"></div>
+      <div class="field"><label>密码</label><input id="uPass" type="password" placeholder="至少 6 位"></div>
+      <div class="field"><label>角色</label><select id="uRole">${Object.entries(ROLE_CN).map(([k,v])=>`<option value="${k}">${v}</option>`).join('')}</select></div></div>
+      <button class="btn primary" id="uAdd">创建账号</button></div>
+    <div class="table-wrap"><table><thead><tr><th>账号 / 姓名</th><th>角色</th><th>状态</th><th>创建时间</th></tr></thead><tbody>${rows}</tbody></table></div>`;
+  $('uAdd').addEventListener('click', async () => {
+    try {
+      await api('/users', { method:'POST', body: JSON.stringify({ username:$('uName').value.trim(), name:$('uReal').value.trim(), password:$('uPass').value, role:$('uRole').value }) });
+      toast('账号已创建'); loadUsers();
+    } catch (e) { toast(e.message, 'err'); }
+  });
+}
+const ROLE_CN = { admin:'系统管理员', security_leader:'安保负责人', security_staff:'安保值班员', head_teacher:'班主任', viewer:'演示访客' };
+
+/* ================= 审计 ================= */
+async function loadAudit() {
+  const d = await api('/audit');
+  const rows = d.records.map(a => `<tr><td style="white-space:nowrap">${esc(a.created_text)}</td><td><b>${esc(a.username)}</b></td>
+    <td><span class="badge gray">${esc(a.action)}</span></td><td>${esc(a.detail)}</td></tr>`).join('');
+  $('view').innerHTML = `<div class="table-wrap"><table><thead><tr><th>时间</th><th>操作人</th><th>动作</th><th>详情</th></tr></thead><tbody>${rows}</tbody></table></div>`;
+}
+
+/* ================= 指标 ================= */
+async function loadMetrics() {
+  const d = await api('/metrics');
+  const counters = Object.entries(d.counters || {}).map(([k,v]) => `<div class="cam"><div class="cam-loc">${esc(k)}</div><div class="cell-main" style="font-size:20px;margin-top:6px">${v}</div></div>`).join('');
+  const dbRows = Object.entries(d.db || {}).map(([k,v]) => `<div class="cam"><div class="cam-loc">${esc(DB_CN[k]||k)}</div><div class="cell-main" style="font-size:20px;margin-top:6px">${v}</div></div>`).join('');
+  $('view').innerHTML = `
+    <div class="stats" style="grid-template-columns:repeat(3,1fr)">
+      <div class="stat cyan"><div class="k">服务运行时长</div><div class="v">${Math.floor(d.uptime_sec/60)}<small>分钟</small></div></div>
+      <div class="stat green"><div class="k">接口调用计数</div><div class="v">${Object.values(d.counters||{}).reduce((a,b)=>a+b,0)}</div></div>
+      <div class="stat yellow"><div class="k">业务记录总量</div><div class="v">${Object.values(d.db||{}).reduce((a,b)=>a+b,0)}</div></div>
+    </div>
+    <div class="section-head"><h3>业务数据</h3><div class="line"></div></div>
+    <div class="cam-grid">${dbRows}</div>
+    <div class="section-head" style="margin-top:24px"><h3>接口计数</h3><div class="line"></div></div>
+    <div class="cam-grid">${counters || '<div class="empty">暂无调用</div>'}</div>`;
+}
+const DB_CN = { alerts:'预警记录', events:'事件归档', orders_pending:'待办工单', violations:'违规记录', pushes:'推送记录', interventions:'干预记录' };
+
+/* ================= 弹窗 ================= */
+function openModal(title, body, foot = '', small = true) {
+  $('modalTitle').textContent = title;
+  $('modalBody').innerHTML = body;
+  $('modalFoot').innerHTML = foot;
+  $('modal').classList.remove('hidden');
+  $('modal').querySelectorAll('[data-close]').forEach(b => b.addEventListener('click', closeModal));
+}
+function closeModal() { $('modal').classList.add('hidden'); }
+$('modal').addEventListener('click', (e) => { if (e.target === $('modal')) closeModal(); });
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeModal(); });
+
+/* ================= 启动 ================= */
+(async function bootstrap() {
+  const token = localStorage.getItem('campus_token');
+  if (!token) return;
+  try {
+    state.user = await api('/auth/me');
+    enterApp();
+  } catch (e) {
+    localStorage.removeItem('campus_token');
+  }
+})();
+</script>
+</body>
+</html>

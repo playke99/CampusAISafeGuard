@@ -1,0 +1,8 @@
+{
+  "comment": "虚拟学生人脸库（演示数据，对应学校人脸系统返回结构）",
+  "students": [
+    { "student_id": "2023001", "name": "张三", "major": "软件技术", "class_name": "软件2301" },
+    { "student_id": "2023002", "name": "李四", "major": "大数据技术", "class_name": "大数据2302" },
+    { "student_id": "2023003", "name": "王五", "major": "人工智能技术应用", "class_name": "人工智能2301" }
+  ]
+}

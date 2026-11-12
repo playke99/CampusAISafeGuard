@@ -1,0 +1,10 @@
+{
+  "camera_id": "lib-cam-03",
+  "location": "图书馆3层自习区",
+  "threshold_minutes": 25,
+  "comment": "占座演示剧本：L-301 物品滞留 35 分钟触发工单；L-302 仅 15 分钟不触发",
+  "seats": {
+    "L-301": { "item": "书包和水杯", "absent_minutes": 35, "repeat_count": 1 },
+    "L-302": { "item": "笔记本电脑", "absent_minutes": 15, "repeat_count": 1 }
+  }
+}

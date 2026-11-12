@@ -1,0 +1,620 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>数智卫校 · 校园安全 AI 预警与干预系统 · 演示稿</title>
+<style>
+  :root{
+    --bg:#07111f; --bg2:#0a182e; --card:rgba(17,39,71,.72); --card2:rgba(14,32,59,.85);
+    --line:#1e3c66; --text:#e8f2ff; --muted:#93accb;
+    --cyan:#35d0ff; --blue:#2f7cff; --red:#ff4d5e; --orange:#ff9f43; --yellow:#ffd166;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{
+    background:var(--bg); color:var(--text);
+    font-family:"Microsoft YaHei","PingFang SC","Hiragino Sans GB","Segoe UI",sans-serif;
+    overflow:hidden;
+  }
+  body::before{
+    content:""; position:fixed; inset:0; pointer-events:none;
+    background:
+      radial-gradient(900px 500px at 12% 0%, rgba(53,208,255,.13), transparent 60%),
+      radial-gradient(800px 480px at 92% 8%, rgba(47,124,255,.12), transparent 62%),
+      linear-gradient(180deg,rgba(255,255,255,.02),transparent 30%);
+  }
+  body::after{
+    content:""; position:fixed; inset:0; pointer-events:none; opacity:.35;
+    background-image:linear-gradient(rgba(53,208,255,.05) 1px,transparent 1px),
+                     linear-gradient(90deg,rgba(53,208,255,.05) 1px,transparent 1px);
+    background-size:64px 64px;
+    mask-image:radial-gradient(circle at 50% 40%,#000 0%,transparent 78%);
+  }
+  .slide{
+    position:absolute; inset:0; display:none; flex-direction:column;
+    padding:56px 72px 96px; z-index:2;
+  }
+  .slide.active{display:flex; animation:fade .45s ease}
+  @keyframes fade{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+  .kicker{
+    color:var(--cyan); font-size:13px; font-weight:700; letter-spacing:2px;
+    display:inline-block; margin-bottom:10px;
+  }
+  .kicker::after{content:"";display:block;width:44px;height:3px;background:var(--cyan);margin-top:10px;border-radius:2px}
+  h1{font-size:34px; line-height:1.3; font-weight:700; letter-spacing:.5px}
+  .s-body{flex:1; margin-top:34px; min-height:0}
+  .foot{
+    position:absolute; left:72px; right:72px; bottom:50px;
+    display:flex; justify-content:space-between; color:var(--muted); font-size:12px;
+    border-top:1px solid rgba(30,60,102,.7); padding-top:12px;
+  }
+  .grid{display:grid; gap:18px}
+  .g4{grid-template-columns:repeat(4,1fr)}
+  .g3{grid-template-columns:repeat(3,1fr)}
+  .g2{grid-template-columns:repeat(2,1fr)}
+  .card{
+    background:var(--card); border:1px solid var(--line); border-radius:14px;
+    padding:20px 20px 18px; position:relative; overflow:hidden;
+  }
+  .card::before{content:"";position:absolute;left:20px;top:0;width:42px;height:3px;background:var(--cyan)}
+  .card.red::before{background:var(--red)} .card.orange::before{background:var(--orange)}
+  .card.blue::before{background:var(--blue)} .card.yellow::before{background:var(--yellow)}
+  .card h3{font-size:17px; margin-bottom:12px}
+  .card ul{list-style:none; display:flex; flex-direction:column; gap:7px}
+  .card li{color:var(--muted); font-size:13px; line-height:1.6; padding-left:14px; position:relative}
+  .card li::before{content:"";position:absolute;left:0;top:9px;width:5px;height:5px;border-radius:50%;background:var(--cyan);opacity:.8}
+  .muted{color:var(--muted)}
+  .note{color:var(--muted); font-size:13px; line-height:1.7; margin-top:20px}
+  .accent{color:var(--cyan)} .red-t{color:var(--red)} .orange-t{color:var(--orange)}
+  .yellow-t{color:var(--yellow)} .blue-t{color:var(--blue)}
+
+  /* 封面 */
+  .cover{padding-left:92px; justify-content:center}
+  .cover::before{content:"";position:absolute;left:0;top:0;width:8px;height:100%;background:linear-gradient(180deg,var(--cyan),var(--blue))}
+  .cover .eyebrow{font-size:15px;font-weight:700;color:var(--cyan);letter-spacing:3px;margin-bottom:18px}
+  .cover h1{font-size:58px;line-height:1.18;max-width:1000px}
+  .cover .sub{font-size:22px;color:var(--muted);margin-top:16px}
+  .cover .desc{font-size:15px;color:var(--text);margin-top:34px;line-height:1.9}
+  .tags{display:flex;gap:12px;margin-top:40px;flex-wrap:wrap}
+  .tag{border:1px solid var(--line);background:var(--card);padding:9px 20px;border-radius:999px;font-size:13px;font-weight:700}
+  .tag:nth-child(1){color:var(--cyan);border-color:rgba(53,208,255,.5)}
+  .tag:nth-child(2){color:var(--orange);border-color:rgba(255,159,67,.5)}
+  .tag:nth-child(3){color:var(--blue);border-color:rgba(47,124,255,.5)}
+  .tag:nth-child(4){color:var(--yellow);border-color:rgba(255,209,102,.5)}
+
+  /* 流程 */
+  .flow{display:flex;align-items:stretch;gap:0}
+  .flow .step{
+    flex:1;background:var(--card);border:1px solid var(--line);border-radius:12px;
+    padding:16px;position:relative;
+  }
+  .flow .step::before{content:"";position:absolute;left:0;top:0;right:0;height:3px;background:var(--cyan);border-radius:12px 12px 0 0}
+  .flow .step:nth-child(2)::before{background:var(--orange)}
+  .flow .step:nth-child(3)::before{background:var(--blue)}
+  .flow .step:nth-child(4)::before{background:var(--red)}
+  .flow .step:nth-child(5)::before{background:var(--yellow)}
+  .flow .step b{display:block;font-size:14px;margin-bottom:8px}
+  .flow .step span{color:var(--muted);font-size:12px;line-height:1.6;white-space:pre-line}
+  .arrow{display:flex;align-items:center;justify-content:center;width:34px;color:var(--line);font-size:18px;flex:none}
+
+  /* 架构分层 */
+  .layers{display:flex;flex-direction:column;gap:12px}
+  .layer{
+    display:grid;grid-template-columns:150px 1fr;align-items:center;
+    background:var(--card);border:1px solid var(--line);border-radius:10px;
+    padding:16px 22px;position:relative;
+  }
+  .layer::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--cyan);border-radius:4px 0 0 4px}
+  .layer:nth-child(2)::before{background:var(--blue)}
+  .layer:nth-child(3)::before{background:var(--orange)}
+  .layer:nth-child(4)::before{background:var(--yellow)}
+  .layer:nth-child(5)::before{background:var(--muted)}
+  .layer b{font-size:17px}
+  .layer span{color:var(--muted);font-size:13px;line-height:1.6}
+
+  /* 表格 */
+  table{width:100%;border-collapse:separate;border-spacing:0;font-size:13px;border:1px solid var(--line);border-radius:12px;overflow:hidden}
+  th,td{padding:11px 14px;text-align:left;border-bottom:1px solid rgba(30,60,102,.65)}
+  tr:last-child td{border-bottom:none}
+  th{background:rgba(53,208,255,.08);color:var(--cyan);font-weight:700}
+  td{background:var(--card2);color:var(--text)}
+  tbody tr:nth-child(even) td{background:rgba(17,39,71,.55)}
+  .sev{font-weight:700;text-align:center;border-radius:6px;padding:2px 8px;display:inline-block;font-size:12px}
+  .sev.r{color:var(--red);background:rgba(255,77,94,.12)}
+  .sev.o{color:var(--orange);background:rgba(255,159,67,.12)}
+  .sev.y{color:var(--yellow);background:rgba(255,209,102,.12)}
+
+  /* 状态流 */
+  .states{display:flex;align-items:center;gap:0;margin-bottom:22px}
+  .state{
+    flex:1;background:var(--card);border:1px solid var(--line);border-radius:12px;
+    padding:16px 14px;text-align:center;position:relative;
+  }
+  .state::before{content:"";position:absolute;left:0;top:0;right:0;height:3px;background:var(--cyan);border-radius:12px 12px 0 0}
+  .state:nth-child(3)::before{background:var(--blue)}
+  .state:nth-child(5)::before{background:var(--orange)}
+  .state:nth-child(7)::before{background:var(--yellow)}
+  .state b{display:block;font-size:16px;margin-bottom:5px}
+  .state span{font-size:11px;color:var(--muted);letter-spacing:.5px}
+
+  /* 模块 */
+  .modules{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+  .mod{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 18px}
+  .mod .no{color:var(--cyan);font-size:12px;font-weight:700;letter-spacing:1px}
+  .mod b{display:block;font-size:16px;margin:6px 0 8px}
+  .mod span{color:var(--muted);font-size:12px;line-height:1.55}
+
+  /* 场景 */
+  .scenes{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+  .scene{
+    display:grid;grid-template-columns:4px 1fr;gap:16px;align-items:center;
+    background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px 18px;
+  }
+  .scene i{display:block;width:4px;height:100%;border-radius:4px;background:var(--cyan)}
+  .scene:nth-child(2) i{background:var(--orange)} .scene:nth-child(3) i{background:var(--yellow)}
+  .scene:nth-child(4) i{background:var(--red)} .scene:nth-child(5) i{background:var(--blue)}
+  .scene:nth-child(6) i{background:var(--cyan)} .scene:nth-child(7) i{background:var(--orange)}
+  .scene:nth-child(8) i{background:var(--muted)}
+  .scene b{display:block;font-size:14px;margin-bottom:4px}
+  .scene span{color:var(--muted);font-size:12px}
+
+  /* KPI */
+  .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-top:22px}
+  .kpi{background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:16px 18px;display:flex;align-items:center;gap:14px}
+  .kpi strong{font-size:32px;color:var(--cyan);line-height:1}
+  .kpi:nth-child(2) strong{color:var(--blue)} .kpi:nth-child(3) strong{color:var(--orange)}
+  .kpi:nth-child(4) strong{color:var(--yellow)}
+  .kpi span{color:var(--muted);font-size:12px;line-height:1.4}
+
+  /* 导航 */
+  .progress{position:fixed;left:0;top:0;height:3px;background:linear-gradient(90deg,var(--cyan),var(--blue));z-index:20;transition:width .3s}
+  .nav{position:fixed;left:50%;bottom:14px;transform:translateX(-50%);display:flex;align-items:center;gap:16px;z-index:20;
+       background:rgba(10,24,46,.8);border:1px solid var(--line);border-radius:999px;padding:7px 16px;backdrop-filter:blur(8px)}
+  .nav button{background:none;border:none;color:var(--muted);font-size:16px;cursor:pointer;padding:4px 8px;border-radius:6px}
+  .nav button:hover{color:var(--cyan);background:rgba(53,208,255,.1)}
+  .dots{display:flex;gap:7px}
+  .dot{width:7px;height:7px;border-radius:50%;background:#24456f;cursor:pointer;transition:.2s}
+  .dot.on{background:var(--cyan);box-shadow:0 0 8px rgba(53,208,255,.8);width:18px;border-radius:4px}
+  .page-ind{color:var(--muted);font-size:11px;min-width:42px;text-align:center}
+
+  @media (max-width:900px){
+    .slide{padding:34px 24px 92px;overflow:auto}
+    h1{font-size:24px}
+    .cover{padding-left:32px}
+    .cover h1{font-size:34px}
+    .g4,.g3,.g2,.modules,.scenes,.kpis{grid-template-columns:1fr 1fr}
+    .flow{flex-direction:column;gap:10px}
+    .arrow{width:auto;height:20px;transform:rotate(90deg)}
+    .states{flex-direction:column;gap:8px}
+    .states .arrow{transform:rotate(90deg)}
+    .layer{grid-template-columns:1fr;gap:6px}
+    .foot{left:24px;right:24px;bottom:68px;font-size:10px}
+  }
+  @media print{
+    body{overflow:visible;background:#07111f}
+    .nav,.progress{display:none}
+    .slide{display:flex !important;position:relative;height:100vh;page-break-after:always;animation:none}
+    .foot{display:none}
+  }
+</style>
+</head>
+<body>
+<div class="progress" id="progress"></div>
+
+<!-- 01 封面 -->
+<section class="slide cover active">
+  <div class="eyebrow">数智卫校 · 智慧校园安全治理平台</div>
+  <h1>校园安全 AI 预警与干预系统</h1>
+  <div class="sub">基于 AI + 大数据的智慧校园防霸凌系统</div>
+  <div class="desc">计算机视觉实时分析 · 分级预警自动触发 · 人工 / 智能干预闭环 · 全流程事件留痕</div>
+  <div class="tags"><span class="tag">行为检测</span><span class="tag">实时告警</span><span class="tag">干预闭环</span><span class="tag">全程留痕</span></div>
+  <div class="foot"><span>v2.0.0 &nbsp;|&nbsp; 2026</span><span>数智卫校 · 校园安全专项</span></div>
+</section>
+
+<!-- 02 背景 -->
+<section class="slide">
+  <div class="kicker">01 / BACKGROUND</div>
+  <h1>建设背景：校园安全治理的四道难题</h1>
+  <div class="s-body">
+    <div class="grid g4">
+      <div class="card orange"><h3>看得见，看不懂</h3><ul>
+        <li>摄像头数量多，依赖人工盯屏</li><li>夜间与楼道盲区事件发现滞后</li><li>事后翻查录像耗时耗力</li></ul></div>
+      <div class="card red"><h3>霸凌隐蔽，取证困难</h3><ul>
+        <li>围堵、推搡、言语威胁持续时间短</li><li>学生不敢主动报告</li><li>缺乏客观行为证据链</li></ul></div>
+      <div class="card blue"><h3>发现与处置割裂</h3><ul>
+        <li>发现、上报、调度分散在不同系统</li><li>响应慢、责任边界不清</li><li>处置过程无完整记录</li></ul></div>
+      <div class="card"><h3>数据沉睡，难以复盘</h3><ul>
+        <li>事件停留在纸质记录或聊天工具</li><li>无法做区域与时段趋势分析</li><li>难以支撑德育决策</li></ul></div>
+    </div>
+    <div class="card" style="margin-top:22px;padding:24px 28px">
+      <b class="accent" style="font-size:15px">核心命题</b>
+      <p style="font-size:19px;line-height:1.8;margin-top:10px">把监控从「只能看」升级为「能识别、能告警、能处置、能复盘」，<br>让校园安全治理从「事后追责」前移到「事中干预」。</p>
+    </div>
+  </div>
+  <div class="foot"><span>数智卫校 · 校园安全 AI 预警与干预系统</span><span>02</span></div>
+</section>
+
+<!-- 03 定位 -->
+<section class="slide">
+  <div class="kicker">02 / POSITIONING</div>
+  <h1>系统定位：从行为检测到干预闭环</h1>
+  <div class="s-body">
+    <div class="flow" style="margin-bottom:24px">
+      <div class="step"><b class="accent">01 行为检测</b><span>姿态关键点
+危险词匹配
+目标检测</span></div>
+      <div class="arrow">›</div>
+      <div class="step"><b class="orange-t">02 实时告警</b><span>四级定级
+去重升级
+定向推送</span></div>
+      <div class="arrow">›</div>
+      <div class="step"><b class="blue-t">03 分级研判</b><span>证据归档
+处置建议
+报告生成</span></div>
+      <div class="arrow">›</div>
+      <div class="step"><b class="red-t">04 干预处置</b><span>语音震慑
+安保调度
+现场处置</span></div>
+      <div class="arrow">›</div>
+      <div class="step"><b class="yellow-t">05 闭环归档</b><span>事件留痕
+审计记录
+趋势复盘</span></div>
+    </div>
+    <div class="grid g3">
+      <div class="card"><h3>精准识别</h3><ul><li>COCO-17 姿态关键点几何判定</li><li>摔倒 / 攻击 / 围堵三类信号</li><li>多信号叠加判定疑似霸凌</li></ul></div>
+      <div class="card orange"><h3>自动分级</h3><ul><li>红 / 橙 / 黄 / 蓝四级预警</li><li>同设备同类型 60 秒去重</li><li>红色自动语音震慑</li></ul></div>
+      <div class="card blue"><h3>完整留痕</h3><ul><li>预警、事件、工单、推送统一归档</li><li>干预时间线全程可追溯</li><li>审计日志覆盖关键操作</li></ul></div>
+    </div>
+    <div class="note">系统同时保留图书馆占座监测作为扩展场景，验证同一套预警 / 工单 / 审计底座的可扩展性。</div>
+  </div>
+  <div class="foot"><span>数智卫校 · 校园安全 AI 预警与干预系统</span><span>03</span></div>
+</section>
+
+<!-- 04 架构 -->
+<section class="slide">
+  <div class="kicker">03 / ARCHITECTURE</div>
+  <h1>总体架构：五层解耦，统一底座</h1>
+  <div class="s-body">
+    <div class="layers">
+      <div class="layer"><b class="accent">应用层</b><span>统一态势看板：总览 · 预警 · 事件 · 工单 · 场景 · 设备 · 用户 · 审计 · 指标</span></div>
+      <div class="layer"><b class="blue-t">业务层</b><span>认证与 RBAC · 预警闭环 · 事件 / 工单 / 违规 / 推送归档 · 场景编排 · 指标审计</span></div>
+      <div class="layer"><b class="orange-t">算法层</b><span>视觉事件判定 · 分级告警引擎 · 危险词匹配 · 风险研判与报告</span></div>
+      <div class="layer"><b class="yellow-t">感知层</b><span>监控关键点帧序列 · 对讲音频 / 转写 · YOLO 检测结果 · 占座事件</span></div>
+      <div class="layer"><b class="muted">数据层</b><span>SQLite WAL · 配置与词库 · 音频资产 · JSONL 归档</span></div>
+    </div>
+    <div class="note">设计原则：分层解耦 · 标准库优先 · 可插拔降级 · 一事一档 · 安全默认</div>
+  </div>
+  <div class="foot"><span>数智卫校 · 校园安全 AI 预警与干预系统</span><span>04</span></div>
+</section>
+
+<!-- 05 技术栈 -->
+<section class="slide">
+  <div class="kicker">04 / TECH STACK</div>
+  <h1>技术栈与部署形态</h1>
+  <div class="s-body">
+    <div class="grid g2">
+      <div class="card"><h3>后端与数据</h3><ul>
+        <li>FastAPI + Uvicorn，自动生成 OpenAPI 文档</li>
+        <li>SQLite（WAL）零部署，表结构可平移 MySQL / PostgreSQL</li>
+        <li>PBKDF2-HMAC-SHA256 密码哈希 + Bearer 会话 Token</li></ul></div>
+      <div class="card blue"><h3>前端与交互</h3><ul>
+        <li>原生 HTML / CSS / JS 单文件看板</li>
+        <li>纯 SVG 图表，无外网 CDN，离线可用</li>
+        <li>按角色渲染导航，响应式适配多分辨率</li></ul></div>
+      <div class="card orange"><h3>AI 与算法</h3><ul>
+        <li>COCO-17 姿态关键点纯算法判定，零依赖可测试</li>
+        <li>YOLO / ASR / LLM 适配器接入，缺失时自动降级</li>
+        <li>能量 VAD + 危险词分级匹配 + 可选本地 Ollama</li></ul></div>
+      <div class="card yellow"><h3>部署与运维</h3><ul>
+        <li>python -m server.main 或 start.bat 一键启动</li>
+        <li>单机可运行，无需外部中间件</li>
+        <li>审计日志 + 运行指标 + 健康检查</li></ul></div>
+    </div>
+    <div class="note">预置 5 类角色：系统管理员 / 安保负责人 / 安保值班员 / 班主任 / 演示访客</div>
+  </div>
+  <div class="foot"><span>数智卫校 · 校园安全 AI 预警与干预系统</span><span>05</span></div>
+</section>
+
+<!-- 06 视觉识别 -->
+<section class="slide">
+  <div class="kicker">05 / VISION</div>
+  <h1>核心能力一：计算机视觉行为识别</h1>
+  <div class="s-body">
+    <div class="note" style="margin:0 0 16px">输入：校园监控视频经姿态估计得到 COCO-17 关键点序列，算法层做纯几何判定，无需 GPU 即可运行。</div>
+    <div class="grid g3">
+      <div class="card orange"><h3>摔倒检测</h3><ul>
+        <li>躯干倾角 = 肩中点 → 髋中点与竖直方向夹角</li>
+        <li>θ &gt; 65° 判定摔倒</li>
+        <li>角度越接近 90°，置信度越高</li></ul>
+        <div class="tag" style="display:inline-block;margin-top:14px;color:var(--orange);border-color:rgba(255,159,67,.5);font-size:11px">fall_angle = 65°</div></div>
+      <div class="card red"><h3>攻击检测</h3><ul>
+        <li>逐帧计算双手腕位移之和</li>
+        <li>滑窗内计算位移 Z-Score</li>
+        <li>Z &gt; 3.0 判定为突发攻击</li></ul>
+        <div class="tag" style="display:inline-block;margin-top:14px;color:var(--red);border-color:rgba(255,77,94,.5);font-size:11px">attack_z = 3.0</div></div>
+      <div class="card yellow"><h3>围堵检测</h3><ul>
+        <li>任意两人肩中点距离与平均肩宽比较</li>
+        <li>距离 &lt; 3.5 × 肩宽判定围堵</li>
+        <li>人数越多、间距越近置信度越高</li></ul>
+        <div class="tag" style="display:inline-block;margin-top:14px;color:var(--yellow);border-color:rgba(255,209,102,.5);font-size:11px">surround_ratio = 3.5</div></div>
+    </div>
+    <div class="card" style="margin-top:20px;padding:20px 24px">
+      <p style="font-size:14px;line-height:1.8">多信号叠加：<b class="red-t">攻击 + 围堵（或摔倒）→ 自动判定「疑似校园霸凌」并升级红色预警</b>；单信号只按基础级别告警，避免误报升级。</p>
+    </div>
+  </div>
+  <div class="foot"><span>数智卫校 · 校园安全 AI 预警与干预系统</span><span>06</span></div>
+</section>
+
+<!-- 07 分级预警 -->
+<section class="slide">
+  <div class="kicker">06 / ALERTING</div>
+  <h1>核心能力二：分级预警与多信号升级</h1>
+  <div class="s-body">
+    <div style="display:grid;grid-template-columns:1.55fr 1fr;gap:20px">
+      <table>
+        <thead><tr><th>信号组合</th><th>预警类型</th><th style="text-align:center">级别</th><th>自动动作</th></tr></thead>
+        <tbody>
+          <tr><td>仅攻击</td><td>疑似暴力攻击</td><td style="text-align:center"><span class="sev r">红色</span></td><td>语音震慑 + 领导通知</td></tr>
+          <tr><td>仅摔倒</td><td>人员摔倒</td><td style="text-align:center"><span class="sev o">橙色</span></td><td>通知安保与班主任</td></tr>
+          <tr><td>仅围堵</td><td>多人围堵</td><td style="text-align:center"><span class="sev y">黄色</span></td><td>推送值班员核实</td></tr>
+          <tr><td>攻击 + 摔倒</td><td>疑似校园霸凌</td><td style="text-align:center"><span class="sev r">红色</span></td><td>震慑 + 安保调度</td></tr>
+          <tr><td>攻击 + 围堵</td><td>疑似校园霸凌</td><td style="text-align:center"><span class="sev r">红色</span></td><td>震慑 + 安保调度</td></tr>
+          <tr><td>摔倒 + 围堵</td><td>多信号冲突</td><td style="text-align:center"><span class="sev r">红色</span></td><td>安保到场 + 通知</td></tr>
+          <tr><td>三类同时出现</td><td>疑似校园霸凌</td><td style="text-align:center"><span class="sev r">红色</span></td><td>启动干预预案</td></tr>
+        </tbody>
+      </table>
+      <div style="display:flex;flex-direction:column;gap:16px">
+        <div class="card"><h3>去重与降噪</h3><ul><li>去重键：摄像头 + 类型</li><li>窗口 60 秒，可配置</li><li>避免同一事件刷屏</li></ul></div>
+        <div class="card red"><h3>自动震慑</h3><ul><li>红色预警自动排队语音干预</li><li>固定话术：立即停止危险行为</li><li>同步推送安保与班主任</li></ul></div>
+      </div>
+    </div>
+    <div class="note">级别含义：红（紧急，可能正在发生霸凌 / 暴力）· 橙（高风险，立即核实）· 黄（需关注）· 蓝（提示观察）</div>
+  </div>
+  <div class="foot"><span>数智卫校 · 校园安全 AI 预警与干预系统</span><span>07</span></div>
+</section>
+
+<!-- 08 闭环 -->
+<section class="slide">
+  <div class="kicker">07 / CLOSED LOOP</div>
+  <h1>核心能力三：干预处置与全程留痕</h1>
+  <div class="s-body">
+    <div class="states">
+      <div class="state"><b class="accent">待受理</b><span>pending</span></div>
+      <div class="arrow">›</div>
+      <div class="state"><b class="blue-t">已受理</b><span>acknowledged</span></div>
+      <div class="arrow">›</div>
+      <div class="state"><b class="orange-t">干预中</b><span>intervening</span></div>
+      <div class="arrow">›</div>
+      <div class="state"><b class="yellow-t">已闭环</b><span>closed</span></div>
+    </div>
+    <div class="grid g4">
+      <div class="card red"><h3>语音震慑</h3><ul><li>自动播报警告话术，第一时间制止行为</li></ul></div>
+      <div class="card orange"><h3>安保调度</h3><ul><li>按级别推送安保负责人与值班领导</li></ul></div>
+      <div class="card"><h3>班主任通知</h3><ul><li>同步学生所属班级，便于事后跟进</li></ul></div>
+      <div class="card blue"><h3>现场处置</h3><ul><li>值班人员到场核实并填写处置结果</li></ul></div>
+    </div>
+    <div class="card" style="margin-top:20px;padding:20px 24px">
+      <p style="font-size:14px;line-height:1.8">留痕设计：每条预警拥有唯一编号 <b class="accent">ALM-YYYYMMDD-xxxxxxxx</b>，串起事件 <b class="accent">EVT-*</b>、工单、推送、干预时间线与审计日志，做到「一事一档、全程可溯」，支持一键生成研判报告。</p>
+    </div>
+  </div>
+  <div class="foot"><span>数智卫校 · 校园安全 AI 预警与干预系统</span><span>08</span></div>
+</section>
+
+<!-- 09 多模态 -->
+<section class="slide">
+  <div class="kicker">08 / MULTIMODAL</div>
+  <h1>核心能力四：多模态研判与智能报告</h1>
+  <div class="s-body">
+    <div class="flow" style="margin-bottom:24px">
+      <div class="step"><b class="accent">音频 / 文本</b><span>对讲收音
+转写文本</span></div>
+      <div class="arrow">›</div>
+      <div class="step"><b class="blue-t">VAD 切分</b><span>能量端点
+25ms 帧</span></div>
+      <div class="arrow">›</div>
+      <div class="step"><b class="orange-t">危险词匹配</b><span>红 / 橙 / 黄
+分级命中</span></div>
+      <div class="arrow">›</div>
+      <div class="step"><b class="red-t">风险研判</b><span>规则建议
+可选 LLM</span></div>
+      <div class="arrow">›</div>
+      <div class="step"><b class="yellow-t">报告与推送</b><span>结构化归档
+定向通知</span></div>
+    </div>
+    <div class="grid g3">
+      <div class="card red"><h3>危险词分级</h3><ul><li>红：救命、打死、流血</li><li>橙：别打我、滚开、住手</li><li>黄：威胁、辱骂、挑衅</li></ul></div>
+      <div class="card orange"><h3>结构化研判</h3><ul><li>事件概况 + 证据 + 指标</li><li>处置建议按类型与级别生成</li><li>输出 Markdown 研判报告</li></ul></div>
+      <div class="card blue"><h3>定向推送</h3><ul><li>按级别选择推送对象</li><li>红色：领导 + 班主任</li><li>橙 / 黄：值班员 + 班主任</li></ul></div>
+    </div>
+    <div class="note">LLM 采用可选增强：本地 Ollama 可用时做深度研判，不可用时静默降级为规则结果，主流程不受影响。</div>
+  </div>
+  <div class="foot"><span>数智卫校 · 校园安全 AI 预警与干预系统</span><span>09</span></div>
+</section>
+
+<!-- 10 功能模块 -->
+<section class="slide">
+  <div class="kicker">09 / MODULES</div>
+  <h1>功能模块地图：一个看板，九个工作面</h1>
+  <div class="s-body">
+    <div class="modules">
+      <div class="mod"><div class="no">01</div><b>态势总览</b><span>指标卡 · 24 小时趋势 · 级别 / 类型分布 · 摄像头状态</span></div>
+      <div class="mod"><div class="no">02</div><b>预警中心</b><span>多条件筛选 · 证据与骨架 · 受理 / 干预 / 闭环</span></div>
+      <div class="mod"><div class="no">03</div><b>事件中心</b><span>五类事件统一归档 · 按角色脱敏</span></div>
+      <div class="mod"><div class="no">04</div><b>工单闭环</b><span>图书馆占座工单 · 一键闭环</span></div>
+      <div class="mod"><div class="no">05</div><b>智能场景</b><span>8 个可运行演示场景 · 一键复现</span></div>
+      <div class="mod"><div class="no">06</div><b>设备管理</b><span>摄像头 / 对讲 / 告警器台账与在线状态</span></div>
+      <div class="mod"><div class="no">07</div><b>用户与权限</b><span>五类角色 · 权限点控制</span></div>
+      <div class="mod"><div class="no">08</div><b>审计日志</b><span>登录与关键操作全量留痕</span></div>
+      <div class="mod"><div class="no">09</div><b>运行指标</b><span>接口计数 · 登录情况 · 数据统计</span></div>
+    </div>
+  </div>
+  <div class="foot"><span>数智卫校 · 校园安全 AI 预警与干预系统</span><span>10</span></div>
+</section>
+
+<!-- 11 业务流程 -->
+<section class="slide">
+  <div class="kicker">10 / WORKFLOW</div>
+  <h1>业务流程：从画面到闭环的六个动作</h1>
+  <div class="s-body">
+    <div class="flow" style="margin-bottom:22px">
+      <div class="step"><b class="accent">01 画面接入</b><span>摄像头关键点
+帧序列上送</span></div>
+      <div class="arrow">›</div>
+      <div class="step"><b class="blue-t">02 行为识别</b><span>摔倒 / 攻击 /
+围堵判定</span></div>
+      <div class="arrow">›</div>
+      <div class="step"><b class="orange-t">03 分级定级</b><span>多信号升级
+60 秒去重</span></div>
+      <div class="arrow">›</div>
+      <div class="step"><b class="red-t">04 实时告警</b><span>生成 ALM 编号
+定向推送</span></div>
+      <div class="arrow">›</div>
+      <div class="step"><b class="yellow-t">05 干预处置</b><span>震慑 / 调度 /
+通知 / 到场</span></div>
+      <div class="arrow">›</div>
+      <div class="step"><b class="accent">06 闭环归档</b><span>状态 closed
+报告与审计</span></div>
+    </div>
+    <table>
+      <thead><tr><th>阶段</th><th>系统承载</th><th>输出</th></tr></thead>
+      <tbody>
+        <tr><td>行为检测</td><td>ai/vision · ai/audio · behavior_service</td><td>风险信号</td></tr>
+        <tr><td>实时告警</td><td>ai/alert_engine · server/api.py</td><td>预警 ALM-*</td></tr>
+        <tr><td>干预处置</td><td>预警闭环 API · interventions 表</td><td>干预时间线</td></tr>
+        <tr><td>闭环归档</td><td>alerts / events / audit_logs</td><td>事件 EVT-*</td></tr>
+      </tbody>
+    </table>
+    <div class="note">编号规范：ALM-YYYYMMDD-xxxxxxxx（预警） · EVT-YYYYMMDD-xxxxxxxx（事件）</div>
+  </div>
+  <div class="foot"><span>数智卫校 · 校园安全 AI 预警与干预系统</span><span>11</span></div>
+</section>
+
+<!-- 12 演示场景 -->
+<section class="slide">
+  <div class="kicker">11 / SCENARIOS</div>
+  <h1>演示场景：八个可一键复现的业务现场</h1>
+  <div class="s-body">
+    <div class="scenes">
+      <div class="scene"><i></i><div><b>视觉 · 暴力攻击</b><span>红色预警 + 自动语音震慑</span></div></div>
+      <div class="scene"><i></i><div><b>视觉 · 人员摔倒</b><span>橙色预警 + 校医 / 班主任通知</span></div></div>
+      <div class="scene"><i></i><div><b>视觉 · 多人围堵</b><span>黄色预警 + 值班员核实</span></div></div>
+      <div class="scene"><i></i><div><b>视觉 · 霸凌冲突</b><span>围堵 + 攻击叠加，升级红色</span></div></div>
+      <div class="scene"><i></i><div><b>智能体 · 多模态研判</b><span>转写 + 研判 + 报告 + 定向推送</span></div></div>
+      <div class="scene"><i></i><div><b>对讲 · 危险词干预</b><span>命中危险词告警并播放制止话术</span></div></div>
+      <div class="scene"><i></i><div><b>行为规范 · 人脸定位</b><span>违规检出 + 定位 + 未识别转人工</span></div></div>
+      <div class="scene"><i></i><div><b>图书馆 · 占座工单</b><span>超时占座生成工单并推送管理员</span></div></div>
+    </div>
+  </div>
+  <div class="foot"><span>数智卫校 · 校园安全 AI 预警与干预系统</span><span>12</span></div>
+</section>
+
+<!-- 13 价值 -->
+<section class="slide">
+  <div class="kicker">12 / VALUE</div>
+  <h1>应用价值：安全、管理、技术与合规</h1>
+  <div class="s-body">
+    <div class="grid g4">
+      <div class="card red"><h3>安全价值</h3><ul><li>事后追责前移为事中干预</li><li>红色预警分钟级响应</li><li>语音震慑第一时间制止</li></ul></div>
+      <div class="card"><h3>管理价值</h3><ul><li>五类事件统一归档</li><li>区域与时段趋势可分析</li><li>支撑安全例会与德育决策</li></ul></div>
+      <div class="card blue"><h3>技术价值</h3><ul><li>算法与业务解耦</li><li>姿态判定零依赖可测试</li><li>视觉模型可按硬件替换</li></ul></div>
+      <div class="card yellow"><h3>合规价值</h3><ul><li>最小权限与敏感字段脱敏</li><li>关键操作全量审计</li><li>符合个人信息保护要求</li></ul></div>
+    </div>
+    <div class="kpis">
+      <div class="kpi"><strong>63</strong><span>项自动化测试通过</span></div>
+      <div class="kpi"><strong>8</strong><span>个可运行演示场景</span></div>
+      <div class="kpi"><strong>4</strong><span>级预警分级</span></div>
+      <div class="kpi"><strong>9</strong><span>张业务数据表</span></div>
+    </div>
+    <div class="note">面向中职 / 高职校园安全治理场景，可作为数智卫校安全大脑的核心业务子系统。</div>
+  </div>
+  <div class="foot"><span>数智卫校 · 校园安全 AI 预警与干预系统</span><span>13</span></div>
+</section>
+
+<!-- 14 交付 -->
+<section class="slide">
+  <div class="kicker">13 / DELIVERY</div>
+  <h1>交付清单与后续演进</h1>
+  <div class="s-body">
+    <div class="grid g2">
+      <div class="card"><h3>本次交付</h3><ul>
+        <li>清理后的完整代码工程（统一技术栈）</li>
+        <li>8 份标准化项目文档（概述 / 架构 / 功能 / 流程 / 算法 / API / 部署 / 验收）</li>
+        <li>PPTX 与 HTML 双版本演示稿</li>
+        <li>63 项自动化测试与 8 个演示场景</li>
+        <li>真实语音资产与旧项目合规资料</li></ul></div>
+      <div class="card blue"><h3>后续演进</h3><ul>
+        <li>接入 RTMPose / YOLO-Pose 实时视频流</li>
+        <li>ASR 与本地大模型网关接入，提升研判深度</li>
+        <li>数据库迁移 MySQL / PostgreSQL，支撑多校区</li>
+        <li>对接教育局与公安平台，实现跨系统级联</li>
+        <li>移动端巡查与家校通知</li></ul></div>
+    </div>
+    <div class="card" style="margin-top:26px;padding:30px;text-align:center">
+      <p style="font-size:22px;font-weight:700;line-height:1.8">让每一次危险行为都被看见，让每一次预警都有回应。<br><span class="accent">数智卫校 · 校园安全 AI 预警与干预系统</span></p>
+    </div>
+  </div>
+  <div class="foot"><span>数智卫校 · 校园安全 AI 预警与干预系统</span><span>14</span></div>
+</section>
+
+<div class="nav">
+  <button id="prev" title="上一页 (←)">‹</button>
+  <div class="dots" id="dots"></div>
+  <span class="page-ind" id="pageInd">1 / 14</span>
+  <button id="next" title="下一页 (→)">›</button>
+</div>
+
+<script>
+(function(){
+  const slides = Array.from(document.querySelectorAll('.slide'));
+  const dotsBox = document.getElementById('dots');
+  const progress = document.getElementById('progress');
+  const pageInd = document.getElementById('pageInd');
+  let cur = 0;
+  const total = slides.length;
+
+  slides.forEach((_, i) => {
+    const d = document.createElement('span');
+    d.className = 'dot' + (i === 0 ? ' on' : '');
+    d.title = '第 ' + (i + 1) + ' 页';
+    d.addEventListener('click', () => go(i));
+    dotsBox.appendChild(d);
+  });
+  const dots = Array.from(dotsBox.children);
+
+  function render(){
+    slides.forEach((s, i) => s.classList.toggle('active', i === cur));
+    dots.forEach((d, i) => d.classList.toggle('on', i === cur));
+    progress.style.width = ((cur + 1) / total * 100) + '%';
+    pageInd.textContent = (cur + 1) + ' / ' + total;
+  }
+  function go(i){
+    cur = Math.max(0, Math.min(total - 1, i));
+    render();
+  }
+  function next(){ go(cur + 1); }
+  function prev(){ go(cur - 1); }
+
+  document.getElementById('next').addEventListener('click', next);
+  document.getElementById('prev').addEventListener('click', prev);
+  document.addEventListener('keydown', e => {
+    if (['ArrowRight','ArrowDown','PageDown',' ','Enter'].includes(e.key)) { e.preventDefault(); next(); }
+    else if (['ArrowLeft','ArrowUp','PageUp','Backspace'].includes(e.key)) { e.preventDefault(); prev(); }
+    else if (e.key === 'Home') { e.preventDefault(); go(0); }
+    else if (e.key === 'End') { e.preventDefault(); go(total - 1); }
+  });
+  // 触屏滑动
+  let sx = null;
+  document.addEventListener('touchstart', e => sx = e.touches[0].clientX, {passive:true});
+  document.addEventListener('touchend', e => {
+    if (sx === null) return;
+    const dx = e.changedTouches[0].clientX - sx;
+    if (Math.abs(dx) > 60) (dx < 0 ? next : prev)();
+    sx = null;
+  }, {passive:true});
+
+  render();
+})();
+</script>
+</body>
+</html>

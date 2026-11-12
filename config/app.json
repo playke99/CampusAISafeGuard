@@ -1,0 +1,35 @@
+{
+  "app": {
+    "name": "数智卫校·校园安全 AI 预警与干预系统",
+    "subtitle": "基于 AI + 大数据的智慧校园防霸凌平台",
+    "version": "2.0.0",
+    "host": "0.0.0.0",
+    "port": 8100,
+    "token_ttl_sec": 28800,
+    "db_path": "data/campus_security.db",
+    "web_dir": "web",
+    "audio_dir": "audio_assets",
+    "integration_token": "campus-local"
+  },
+  "vision": {
+    "fall_angle": 65.0,
+    "attack_z": 3.0,
+    "surround_ratio": 3.5,
+    "window_size": 8,
+    "min_frames": 3,
+    "dedupe_seconds": 60,
+    "escalate_signals": 2
+  },
+  "alert": {
+    "auto_deterrence_red": true,
+    "dispatch_roles": {
+      "red": ["security_leader", "duty_principal", "head_teacher"],
+      "orange": ["security_staff", "head_teacher"],
+      "yellow": ["security_staff"],
+      "blue": ["security_staff"]
+    }
+  },
+  "campus_ai": {
+    "config_path": "campus_config.json"
+  }
+}

@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>校园安全AI预警与干预系统 产品需求文档（PRD）V1.0</title>
+<style>
+  :root{
+    --primary:#1a56db; --primary-dark:#1e429f; --ink:#1f2937; --sub:#4b5563;
+    --line:#e5e7eb; --bg:#f6f8fb; --card:#ffffff;
+    --blue:#3b82f6; --yellow:#f59e0b; --orange:#f97316; --red:#ef4444; --green:#10b981;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{font-family:"Microsoft YaHei","PingFang SC","Segoe UI",sans-serif;background:var(--bg);color:var(--ink);line-height:1.75;font-size:15px;}
+  .page{max-width:1080px;margin:0 auto;padding:32px 24px 80px;}
+  header.cover{background:linear-gradient(135deg,#1e3a8a 0%,#1a56db 60%,#0ea5e9 100%);color:#fff;border-radius:14px;padding:48px 40px;margin-bottom:28px;}
+  header.cover h1{font-size:30px;letter-spacing:1px;margin-bottom:8px;}
+  header.cover .sub{font-size:16px;opacity:.9;margin-bottom:24px;}
+  .doc-meta{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;}
+  .doc-meta div{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.25);border-radius:8px;padding:10px 14px;font-size:13px;}
+  .doc-meta b{display:block;font-size:12px;opacity:.75;font-weight:600;margin-bottom:2px;}
+  nav.toc{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:24px 28px;margin-bottom:28px;}
+  nav.toc h2{font-size:16px;color:var(--primary-dark);margin-bottom:12px;}
+  nav.toc ol{columns:2;column-gap:40px;padding-left:22px;}
+  nav.toc li{margin:4px 0;font-size:14px;}
+  nav.toc a{color:var(--primary);text-decoration:none;}
+  nav.toc a:hover{text-decoration:underline;}
+  section{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:32px 36px;margin-bottom:24px;}
+  h2.sec{font-size:22px;color:var(--primary-dark);border-left:5px solid var(--primary);padding-left:12px;margin-bottom:20px;}
+  h3{font-size:17px;color:#111827;margin:24px 0 10px;padding-bottom:6px;border-bottom:1px solid var(--line);}
+  h4{font-size:15px;color:var(--primary-dark);margin:16px 0 8px;}
+  p{margin:8px 0;}
+  ul,ol{padding-left:22px;margin:8px 0;}
+  li{margin:4px 0;}
+  table{width:100%;border-collapse:collapse;margin:12px 0;font-size:13.5px;}
+  th{background:#eef2ff;color:#1e3a8a;font-weight:600;text-align:left;}
+  th,td{border:1px solid var(--line);padding:8px 10px;vertical-align:top;}
+  tr:nth-child(even) td{background:#fafbfe;}
+  .tag{display:inline-block;padding:1px 10px;border-radius:999px;font-size:12px;font-weight:600;color:#fff;}
+  .t-blue{background:var(--blue);} .t-yellow{background:var(--yellow);} .t-orange{background:var(--orange);} .t-red{background:var(--red);}
+  .t-green{background:var(--green);} .t-gray{background:#6b7280;} .t-primary{background:var(--primary);}
+  .callout{background:#eff6ff;border-left:4px solid var(--primary);border-radius:0 8px 8px 0;padding:12px 16px;margin:12px 0;font-size:14px;}
+  .warn{background:#fff7ed;border-left:4px solid var(--orange);}
+  .kbd{font-family:Consolas,monospace;background:#f3f4f6;border:1px solid var(--line);border-radius:4px;padding:0 6px;font-size:13px;}
+  .arch{display:flex;flex-direction:column;gap:10px;margin:16px 0;}
+  .arch .layer{border-radius:10px;padding:14px 18px;color:#fff;}
+  .arch .layer b{font-size:15px;display:block;margin-bottom:4px;}
+  .arch .mods{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px;}
+  .arch .mods span{background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.3);border-radius:6px;padding:2px 10px;font-size:12.5px;}
+  .l1{background:linear-gradient(90deg,#0f766e,#14b8a6);} .l2{background:linear-gradient(90deg,#1d4ed8,#3b82f6);}
+  .l3{background:linear-gradient(90deg,#b45309,#f59e0b);} .l4{background:linear-gradient(90deg,#9d174d,#ec4899);}
+  .l5{background:linear-gradient(90deg,#4d7c0f,#84cc16);}
+  .arrow{text-align:center;color:#9ca3af;font-size:18px;line-height:1;}
+  .flow{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin:10px 0;font-size:13px;}
+  .flow .step{background:#eef2ff;border:1px solid #c7d2fe;color:#1e3a8a;border-radius:6px;padding:4px 12px;}
+  .flow .arr{color:#6b7280;}
+  footer{text-align:center;color:#9ca3af;font-size:13px;margin-top:32px;}
+  @media print{
+    body{background:#fff;font-size:12px;} .page{max-width:none;padding:0;}
+    section{break-inside:avoid-page;border:none;border-bottom:2px solid #eee;border-radius:0;}
+    nav.toc{display:none;}
+  }
+  @media (max-width:720px){ nav.toc ol{columns:1;} section{padding:22px 18px;} }
+</style>
+</head>
+<body>
+<div class="page">
+
+<header class="cover">
+  <h1>校园安全AI预警与干预系统</h1>
+  <div class="sub">产品需求文档（Product Requirements Document） · 立项与研发排期正式版</div>
+  <div class="doc-meta">
+    <div><b>文档版本</b>V1.0</div>
+    <div><b>编写日期</b>2026-11-03</div>
+    <div><b>生效日期</b>立项评审通过后生效</div>
+    <div><b>文档状态</b>待评审</div>
+    <div><b>密级</b>内部资料 · 限项目组使用</div>
+  </div>
+</header>
+
+<nav class="toc">
+  <h2>目录</h2>
+  <ol>
+    <li><a href="#s1">文档基础信息</a></li>
+    <li><a href="#s2">项目背景与目标</a></li>
+    <li><a href="#s3">需求范围</a></li>
+    <li><a href="#s4">用户角色与使用场景</a></li>
+    <li><a href="#s5">整体功能架构</a></li>
+    <li><a href="#s6">详细功能需求</a></li>
+    <li><a href="#s7">非功能性需求</a></li>
+    <li><a href="#s8">交互原型说明</a></li>
+    <li><a href="#s9">验收标准</a></li>
+    <li><a href="#s10">项目排期与资源需求</a></li>
+    <li><a href="#s11">风险评估与应对方案</a></li>
+    <li><a href="#s12">附录：术语与共享规则</a></li>
+  </ol>
+</nav>
+
+<!-- ============ 1 文档基础信息 ============ -->
+<section id="s1">
+  <h2 class="sec">1. 文档基础信息</h2>
+  <h3>1.1 文档信息</h3>
+  <table>
+    <tr><th style="width:160px">项目</th><th>内容</th></tr>
+    <tr><td>文档名称</td><td>校园安全AI预警与干预系统 产品需求文档（PRD）</td></tr>
+    <tr><td>文档版本</td><td>V1.0</td></tr>
+    <tr><td>编写人</td><td>产品负责人（PM）</td></tr>
+    <tr><td>审核人</td><td>学校信息中心负责人、保卫处负责人、项目技术负责人</td></tr>
+    <tr><td>批准人</td><td>分管安全工作校领导</td></tr>
+    <tr><td>生效日期</td><td>立项评审会通过并签字确认后生效</td></tr>
+    <tr><td>目标受众</td><td>校领导（立项决策）、产品/研发/测试/算法/运维团队（实施依据）、保卫处与学工部门（业务确认）、采购与财务（预算参考）</td></tr>
+  </table>
+  <h3>1.2 迭代记录</h3>
+  <table>
+    <tr><th>版本</th><th>日期</th><th>修改人</th><th>修改说明</th><th>状态</th></tr>
+    <tr><td>V0.1</td><td>2026-10-20</td><td>PM</td><td>需求调研草稿，汇总保卫处、学工处访谈结论</td><td>已归档</td></tr>
+    <tr><td>V0.9</td><td>2026-10-30</td><td>PM</td><td>补充 AI 识别指标、分级预警规则、验收标准初稿</td><td>已归档</td></tr>
+    <tr><td>V1.0</td><td>2026-11-03</td><td>PM</td><td>全章节定稿，提交立项评审</td><td>当前版本</td></tr>
+  </table>
+  <div class="callout">本文档为需求唯一权威来源（Single Source of Truth）。任何需求变更须提交《需求变更单》，经 PM 与业务负责人双方确认后升版，并同步更新第 9 章验收标准。</div>
+</section>
+
+<!-- ============ 2 项目背景与目标 ============ -->
+<section id="s2">
+  <h2 class="sec">2. 项目背景与目标</h2>
+  <h3>2.1 现存痛点</h3>
+  <table>
+    <tr><th style="width:60px">编号</th><th style="width:180px">痛点</th><th>现状描述与影响</th></tr>
+    <tr><td>P1</td><td>监控"看得见、看不懂"</td><td>校园摄像头数量多（数百路），依赖安保肉眼盯屏，实际同时有效监看不足 20 路，打架、翻越围墙、危险区域逗留等事件多为事后追溯，无法在发生瞬间发现。</td></tr>
+    <tr><td>P2</td><td>预警滞后、靠人上报</td><td>突发事件依赖师生电话或口口相传上报，从发生到保卫处获知平均延迟 10 分钟以上，错过黄金处置窗口。</td></tr>
+    <tr><td>P3</td><td>处置过程无闭环</td><td>警情通过电话/对讲机口头派单，谁接单、何时到场、如何处置、结果如何均无记录，无法复盘与追责，也无法向家长、上级部门输出规范报告。</td></tr>
+    <tr><td>P4</td><td>多源数据孤岛</td><td>视频监控、门禁、一键报警柱、学生健康档案、心理测评、校园舆情分散在不同系统，无法交叉印证（如：某生连续缺勤+情绪测评异常+舆情负面，本可提前干预）。</td></tr>
+    <tr><td>P5</td><td>心理与健康风险难前置</td><td>心理危机、突发疾病等高风险学生识别依赖班主任主观观察，缺乏连续数据支撑，干预往往晚于风险爆发。</td></tr>
+    <tr><td>P6</td><td>安全管理无量化依据</td><td>缺少统一的安全态势数据看板与报表，安全投入、巡逻路线优化、重点时段布防均凭经验决策。</td></tr>
+  </table>
+  <h3>2.2 业务价值</h3>
+  <ul>
+    <li><b>从"事后追溯"到"事中预警、事前预防"：</b>AI 对全部接入视频流 7×24 实时分析，秒级发现异常并自动分级推送，将事件发现时间从分钟级压缩到秒级。</li>
+    <li><b>从"口头派单"到"工单闭环"：</b>预警即工单，处置全流程留痕、限时升级、结果归档，形成可审计、可复盘、可追责的处置链。</li>
+    <li><b>从"数据孤岛"到"一屏统览"：</b>多源数据汇聚建模，支撑重点人员关怀、风险趋势预测与安全资源科学调度。</li>
+    <li><b>合规履职：</b>满足《未成年人保护法》《个人信息保护法》及教育系统安全责任制对"人防+技防"的要求，形成可向上级主管部门报送的安全台账。</li>
+  </ul>
+  <h3>2.3 核心业务目标（量化）</h3>
+  <table>
+    <tr><th style="width:60px">编号</th><th>业务目标</th><th style="width:220px">目标值（上线后 6 个月内）</th><th style="width:160px">度量方式</th></tr>
+    <tr><td>G1</td><td>突发事件发现时效</td><td>视频覆盖区域内 AI 自动发现 ≥90%，发现延迟 ≤5 秒</td><td>系统事件日志 vs 事后核查</td></tr>
+    <tr><td>G2</td><td>橙色及以上预警到场处置时效</td><td>平均到场时间 ≤5 分钟，超时率 ≤5%</td><td>工单时间戳统计</td></tr>
+    <tr><td>G3</td><td>预警处置闭环率</td><td>100% 工单有处置结果与归档记录</td><td>工单状态统计</td></tr>
+    <tr><td>G4</td><td>安保盯屏人力释放</td><td>人工实时盯屏路数减少 ≥70%</td><td>排班记录对比</td></tr>
+    <tr><td>G5</td><td>重点关怀学生风险前置识别</td><td>心理/健康高风险学生建档覆盖率 100%，风险变化周度更新</td><td>关怀名单与更新日志</td></tr>
+    <tr><td>G6</td><td>安全管理报表输出</td><td>月度安全分析报告自动生成，报送及时率 100%</td><td>报表生成记录</td></tr>
+  </table>
+  <h3>2.4 非功能性目标（摘要）</h3>
+  <ul>
+    <li>系统全年可用率 ≥99.9%，核心预警链路 7×24 小时不间断。</li>
+    <li>核心 AI 场景识别准确率/召回率达到第 7.2 节指标，误报率控制在可运营范围内。</li>
+    <li>学生人脸、健康、心理等敏感数据全链路加密、最小化授权、全程审计，符合教育行业数据安全与个人信息保护规范。</li>
+  </ul>
+</section>
+
+<!-- ============ 3 需求范围 ============ -->
+<section id="s3">
+  <h2 class="sec">3. 需求范围</h2>
+  <h3>3.1 本期范围内（P0 为必须交付，P1 为增强交付）</h3>
+  <table>
+    <tr><th style="width:70px">优先级</th><th style="width:200px">范围项</th><th>说明</th></tr>
+    <tr><td><span class="tag t-red">P0</span></td><td>多源数据接入</td><td>视频监控（GB/T28181/RTSP/ONVIF）、门禁系统、一键报警装置三类数据源全量接入</td></tr>
+    <tr><td><span class="tag t-red">P0</span></td><td>AI 智能分析（行为/物品/聚集）</td><td>打架斗殴、翻越围墙、危险区域逗留、管制刀具/危险物品、人群聚集五类核心算法上线</td></tr>
+    <tr><td><span class="tag t-red">P0</span></td><td>分级预警与推送</td><td>蓝/黄/橙/红四级预警规则引擎，系统消息 + APP 推送 + 短信 + 电话（红色）四渠道</td></tr>
+    <tr><td><span class="tag t-red">P0</span></td><td>干预处置工单闭环</td><td>自动派单、处置跟踪、多方协同、升级机制、结果归档</td></tr>
+    <tr><td><span class="tag t-red">P0</span></td><td>安全态势大屏与基础报表</td><td>实时态势大屏、日/周/月安全报表</td></tr>
+    <tr><td><span class="tag t-red">P0</span></td><td>系统管理</td><td>用户权限（RBAC）、设备管理、算法阈值配置、日志审计</td></tr>
+    <tr><td><span class="tag t-orange">P1</span></td><td>智能穿戴设备接入</td><td>学生手环心率/位置数据接入与异常检测（视硬件采购进度）</td></tr>
+    <tr><td><span class="tag t-orange">P1</span></td><td>情绪异常识别</td><td>基于表情与行为的情绪异常辅助识别，仅用于关怀提示，不作为处分依据</td></tr>
+    <tr><td><span class="tag t-orange">P1</span></td><td>校园舆情监测</td><td>校内论坛/表白墙等公开渠道舆情关键词监测</td></tr>
+    <tr><td><span class="tag t-orange">P1</span></td><td>健康档案联动与趋势预测</td><td>健康/心理档案风险建模，风险趋势预测分析</td></tr>
+  </table>
+  <h3>3.2 明确不在本次迭代范围内</h3>
+  <table>
+    <tr><th style="width:220px">排除项</th><th>排除原因 / 后续规划</th></tr>
+    <tr><td>对外公安/消防系统直连联动</td><td>涉及跨部门专线与行政审批，本期仅预留数据导出与一键拨号能力，二期对接</td></tr>
+    <tr><td>硬件采购与施工（摄像头、报警柱、手环）</td><td>属基建采购项目，本 PRD 仅定义软件侧接入协议与数据规范</td></tr>
+    <tr><td>人脸识别门禁通行业务</td><td>已有门禁厂商系统承担，本系统只读取通行记录，不重建通行能力</td></tr>
+    <tr><td>学业表现分析、教学评价</td><td>与校园安全主题无关，明确排除，防止系统定位泛化</td></tr>
+    <tr><td>家长侧主动查看子女实时视频</td><td>涉及其他学生隐私与合规风险，不提供；家长仅接收与本人子女相关的预警告知</td></tr>
+    <tr><td>面向社会公开的舆情全网爬取</td><td>合规风险高，本期仅监测校内公开渠道白名单</td></tr>
+  </table>
+</section>
+
+<!-- ============ 4 用户角色与使用场景 ============ -->
+<section id="s4">
+  <h2 class="sec">4. 用户角色与使用场景</h2>
+  <h3>4.1 角色清单</h3>
+  <table>
+    <tr><th style="width:140px">角色</th><th>定位</th><th>主要使用终端</th></tr>
+    <tr><td>学校管理员（安全主管/值班校领导）</td><td>安全工作总负责人，查看全局态势、审批与督办重大事件</td><td>PC 管理端、态势大屏、移动 APP</td></tr>
+    <tr><td>安保人员（值班员/巡逻岗）</td><td>7×24 值守监控中心，确认预警、接单处置、现场反馈</td><td>监控中心工作站、移动 APP（对讲/工单）</td></tr>
+    <tr><td>班主任</td><td>接收本班学生相关预警，参与涉生事件处置与家校沟通</td><td>移动 APP、PC 端</td></tr>
+    <tr><td>校医/心理辅导教师</td><td>接收健康、心理类预警，记录干预过程，更新关怀档案</td><td>PC 端、移动 APP</td></tr>
+    <tr><td>家长</td><td>接收与本人子女相关的安全告知与处置结果通知</td><td>微信服务号/短信（不开放独立后台）</td></tr>
+    <tr><td>系统运维人员</td><td>设备在线率、算法服务、接口、存储的运行监控与配置维护</td><td>PC 运维端</td></tr>
+  </table>
+  <h3>4.2 典型使用场景（每角色 ≥3 个）</h3>
+
+  <h4>4.2.1 学校管理员</h4>
+  <ol>
+    <li><b>晨间态势巡查：</b>每日 8:00 打开态势大屏，查看夜间预警汇总、未闭环工单、设备在线率，对 2 起夜间黄色预警（学生宿舍区逗留）批示"持续关注"。</li>
+    <li><b>重大事件指挥：</b>红色预警（疑似持械冲突）触发后，大屏自动弹出事发画面与周边摄像头，管理员在指挥视图一键启动应急预案，同步调度最近 3 名安保与值班领导到场。</li>
+    <li><b>月度安全例会：</b>导出系统自动生成的《校园安全月度分析报告》（含事件类型分布、高发时段热力、处置时效统计），作为安全工作会议与上级报送材料。</li>
+    <li><b>演练模式管理：</b>消防演练前将相关区域设为"演练时段"，期间该区域视频告警自动降级为蓝色并标注"演练"，避免恐慌性推送。</li>
+  </ol>
+  <h4>4.2.2 安保人员</h4>
+  <ol>
+    <li><b>预警确认与分级裁定：</b>工作站弹出黄色预警"西侧围墙疑似翻越"，值班员 15 秒内查看 10 秒事件录像切片，确认为学生取回落物，点击"误报"并选择原因，该样本自动回流用于算法优化。</li>
+    <li><b>移动接单处置：</b>巡逻岗 APP 收到橙色工单"实验楼后巷 3 人打架"，导航至现场，处置完成后用 APP 上传现场照片、勾选处置结果（已驱散/已移交班主任/已送医），工单闭环。</li>
+    <li><b>一键报警响应：</b>教学楼 2 层报警柱被触发，系统自动调取最近摄像头画面并生成红色工单，值班员通过 APP 与报警人语音通话安抚，同时调度最近巡逻岗 3 分钟内到场。</li>
+    <li><b>交接班汇总：</b>交接班时系统自动生成《班次警情清单》（本班 12 起预警：误报 5、已闭环 6、跟进中 1），双方线上签字确认。</li>
+  </ol>
+  <h4>4.2.3 班主任</h4>
+  <ol>
+    <li><b>涉生预警协同：</b>收到 APP 推送"本班学生张某涉及聚集围观事件"，查看事件摘要与脱敏截图，按工单要求 10 分钟内到达现场协助安抚。</li>
+    <li><b>重点学生关怀跟进：</b>系统提示"本班李某近 2 周情绪异常提示 3 次、缺勤 2 次"，班主任预约心理教师联合访谈，并在关怀记录中填写跟进结论。</li>
+    <li><b>家校沟通取证：</b>学生家长询问昨日冲突事件，班主任在授权范围内调阅已归档工单中的处置结论与时间线（不可查看其他学生画面），向家长规范答复。</li>
+  </ol>
+  <h4>4.2.4 校医 / 心理辅导教师</h4>
+  <ol>
+    <li><b>健康预警响应：</b>体育课上有学生手环触发心率过速橙色预警，校医 APP 收到定位与基础健康档案（既往病史、过敏史），携带对应药品前往处置。</li>
+    <li><b>心理危机前置干预：</b>系统综合"连续缺勤+情绪异常+舆情负面关键词"将某生风险等级上调为橙色，心理教师 24 小时内完成首次约谈并在系统记录干预计划。</li>
+    <li><b>关怀档案维护：</b>对高风险学生建立/更新关怀档案（干预记录、约谈纪要、转介建议），档案仅限校医、心理教师、安全主管按授权查看。</li>
+  </ol>
+  <h4>4.2.5 家长</h4>
+  <ol>
+    <li><b>事件即时告知：</b>子女涉及橙色及以上事件时，家长在微信服务号收到结构化告知："您的孩子于 14:23 涉及一起校园安全事件，目前状态：已由校医检查，无大碍。详情请联系班主任。"</li>
+    <li><b>处置结果通知：</b>工单闭环后收到处置结论通知（时间、地点、处置结果、后续跟进人），减少信息不对称引发的焦虑与投诉。</li>
+    <li><b>健康提示接收：</b>子女当日出现健康类预警（如心率异常已处置），晚间收到当日安全小结与建议观察事项。</li>
+  </ol>
+  <h4>4.2.6 系统运维人员</h4>
+  <ol>
+    <li><b>设备健康管理：</b>运维看板显示 3 路摄像头离线超 10 分钟，系统自动生成维修工单并派给维保联系人；恢复后离线时长计入月度设备在线率报表。</li>
+    <li><b>算法服务巡检：</b>查看 AI 推理服务的 GPU 利用率、单路分析延迟、队列积压；延迟超阈值时收到告警并按预案扩容推理节点。</li>
+    <li><b>阈值灰度调优：</b>某区域"逗留"误报偏多，运维在测试通道将逗留判定时长从 120 秒调至 180 秒，灰度观察 3 天误报率达标后全量发布，全程留痕可回滚。</li>
+    <li><b>日志审计配合：</b>按季度导出敏感数据访问审计报告（谁在何时访问了何学生的何类数据），提交信息安全负责人审查。</li>
+  </ol>
+</section>
+
+<!-- ============ 5 整体功能架构 ============ -->
+<section id="s5">
+  <h2 class="sec">5. 整体功能架构</h2>
+  <p>系统自下而上划分为五层，层间通过标准接口解耦，任一层可独立扩容与升级：</p>
+  <div class="arch">
+    <div class="layer l5"><b>L5 终端交互层</b>面向不同角色的人机触点，统一认证、统一消息网关<div class="mods"><span>态势大屏</span><span>PC 管理端</span><span>安保工作站</span><span>移动 APP（安保/班主任/校医）</span><span>微信服务号（家长）</span><span>运维看板</span></div></div>
+    <div class="arrow">▲</div>
+    <div class="layer l4"><b>L4 业务应用层</b>承载业务流程与规则，是用户直接感知的功能集合<div class="mods"><span>预警工单中心</span><span>干预处置调度</span><span>协同通讯</span><span>统计分析报表</span><span>关怀档案</span><span>系统管理（RBAC/设备/阈值/审计）</span></div></div>
+    <div class="arrow">▲</div>
+    <div class="layer l3"><b>L3 预警引擎层</b>事件规则计算与分级决策核心，决定"什么事件、找谁、多快"<div class="mods"><span>事件去重聚合</span><span>蓝黄橙红分级规则</span><span>推送路由（对象×渠道）</span><span>限时升级机制</span><span>应急预案匹配</span></div></div>
+    <div class="arrow">▲</div>
+    <div class="layer l2"><b>L2 数据处理层</b>多源数据的清洗、标准化、建模与存储<div class="mods"><span>流数据清洗</span><span>统一事件模型</span><span>视频/图片对象存储</span><span>人员主数据（脱敏视图）</span><span>时序数据（穿戴/健康）</span><span>数据质量监控</span></div></div>
+    <div class="arrow">▲</div>
+    <div class="layer l1"><b>L1 AI 感知层</b>对原始数据进行智能识别，产出结构化"安全事件候选"<div class="mods"><span>视频流接入（GB/T28181/RTSP/ONVIF）</span><span>异常行为识别</span><span>危险物品识别</span><span>聚集识别</span><span>情绪异常识别（P1）</span><span>门禁/报警/穿戴/舆情适配器</span></div></div>
+  </div>
+  <div class="callout"><b>数据主线：</b>感知层产出"事件候选"（含类型、置信度、位置、时间、证据切片）→ 数据处理层标准化并关联人员/位置主数据 → 预警引擎层去重聚合后按规则分级 → 业务应用层生成工单并驱动处置闭环 → 终端层按角色呈现与触达。全链路事件 ID 唯一可追溯。</div>
+</section>
+
+<!-- ============ 6 详细功能需求 ============ -->
+<section id="s6">
+  <h2 class="sec">6. 详细功能需求</h2>
+
+  <h3>6.1 多源数据接入模块</h3>
+
+  <h4>FR-1.1 校园监控摄像头接入</h4>
+  <table>
+    <tr><th style="width:120px">要素</th><th>内容</th></tr>
+    <tr><td>功能描述</td><td>统一接入校园现有 NVR/IPC 视频流，支持 GB/T28181、RTSP、ONVIF 三种协议；接入后按"区域-楼栋-点位"三级目录建档，支持实时预览、录像回放、AI 分析通道开关。</td></tr>
+    <tr><td>操作流程</td><td><div class="flow"><span class="step">新增点位（协议/地址/账号）</span><span class="arr">→</span><span class="step">连通性自动检测</span><span class="arr">→</span><span class="step">绑定区域与地理坐标</span><span class="arr">→</span><span class="step">开启 AI 分析通道并选择算法集</span><span class="arr">→</span><span class="step">上线运行</span></div></td></tr>
+    <tr><td>输入输出</td><td>输入：视频流地址、协议参数、点位元数据；输出：标准化实时流（1080p/≥15fps 供 AI）、点位状态心跳（30s/次）、事件录像切片。</td></tr>
+    <tr><td>异常处理</td><td>断流自动重连（间隔 5s×3 后转 60s）；离线超 10 分钟生成设备维修工单；码流不足 AI 要求时自动降级为仅录像并提示运维。</td></tr>
+  </table>
+
+  <h4>FR-1.2 门禁系统数据接入</h4>
+  <table>
+    <tr><th style="width:120px">要素</th><th>内容</th></tr>
+    <tr><td>功能描述</td><td>对接既有门禁厂商平台，定时/实时同步通行记录（人员、门点、方向、时间、方式），用于异常时段出入（如深夜出入宿舍、上课时段出校）与事件交叉印证。</td></tr>
+    <tr><td>操作流程</td><td><div class="flow"><span class="step">配置厂商 API 凭证</span><span class="arr">→</span><span class="step">字段映射校验</span><span class="arr">→</span><span class="step">增量同步（≤1 分钟延迟）</span><span class="arr">→</span><span class="step">异常出入规则生效</span></div></td></tr>
+    <tr><td>输入输出</td><td>输入：厂商通行记录 API 数据；输出：统一通行事件（personId 脱敏、门点、时间、方向），供预警引擎规则引用。</td></tr>
+    <tr><td>异常处理</td><td>接口失败指数退避重试（1/2/4/8 分钟）；连续失败 30 分钟告警运维；同步延迟超 5 分钟在大屏"数据健康"角标黄色提示。</td></tr>
+  </table>
+
+  <h4>FR-1.3 一键报警装置接入</h4>
+  <table>
+    <tr><th style="width:120px">要素</th><th>内容</th></tr>
+    <tr><td>功能描述</td><td>接入校园报警柱/报警盒（SIP/4G），触发即生成最高优先级事件，自动联动最近 3 路摄像头弹窗，支持安保与报警人双向语音。</td></tr>
+    <tr><td>操作流程</td><td><div class="flow"><span class="step">报警触发</span><span class="arr">→</span><span class="step">红色事件生成+定位</span><span class="arr">→</span><span class="step">联动视频弹窗+语音接通</span><span class="arr">→</span><span class="step">自动派单最近巡逻岗</span></div></td></tr>
+    <tr><td>输入输出</td><td>输入：装置触发信号、装置编号、语音流；输出：红色预警事件、联动视频窗口、通话录音归档。</td></tr>
+    <tr><td>异常处理</td><td>装置心跳丢失超 5 分钟即标记故障并工单化；误触由值班员 30 秒内语音确认后降级为蓝色并注明"误触"。</td></tr>
+  </table>
+
+  <h4>FR-1.4 智能穿戴设备接入（P1）</h4>
+  <table>
+    <tr><th style="width:120px">要素</th><th>内容</th></tr>
+    <tr><td>功能描述</td><td>接入学生手环的心率、运动状态与校园内定位数据，用于体育活动健康异常（心率过速/骤停疑似）与重点学生安全看护。</td></tr>
+    <tr><td>输入输出</td><td>输入：手环上行数据（心率 1 次/5s、定位 1 次/30s）；输出：健康异常事件（含个人阈值基线对比结果）。仅已签署知情同意书的学生启用。</td></tr>
+    <tr><td>异常处理</td><td>数据中断不补传超过 10 分钟的旧数据；心率阈值按"个人静息基线+浮动系数"判定，避免统一阈值误报。</td></tr>
+  </table>
+
+  <h4>FR-1.5 校园舆情数据接入（P1）</h4>
+  <table>
+    <tr><th style="width:120px">要素</th><th>内容</th></tr>
+    <tr><td>功能描述</td><td>对校内公开渠道白名单（校园论坛、公众号留言区、表白墙等）进行关键词与情感倾向监测，命中"霸凌、自伤、约架"等敏感词库时生成舆情线索。</td></tr>
+    <tr><td>输入输出</td><td>输入：白名单渠道公开文本；输出：舆情线索事件（渠道、摘要、命中词、情感分、原文链接）。不采集私域聊天记录。</td></tr>
+    <tr><td>异常处理</td><td>同一内容 24 小时内去重；来源不可用自动暂停该渠道并提示；命中词库支持业务方增删并留审计日志。</td></tr>
+  </table>
+
+  <h4>FR-1.6 学生健康档案接入（P1）</h4>
+  <table>
+    <tr><th style="width:120px">要素</th><th>内容</th></tr>
+    <tr><td>功能描述</td><td>对接校医务室健康档案与心理测评结果，建立重点关怀名单；档案以脱敏视图提供给业务层，业务侧默认仅见风险等级与处置建议，不见原始病历。</td></tr>
+    <tr><td>输入输出</td><td>输入：健康档案/测评数据（加密传输）；输出：风险等级标签（低/中/高）、干预建议、周度风险变化。</td></tr>
+    <tr><td>异常处理</td><td>访问越权直接拒绝并记审计日志；数据导入失败整批回滚，不留半成品档案。</td></tr>
+  </table>
+
+  <h3>6.2 AI 智能分析模块</h3>
+  <p>每类算法输出统一结构：<span class="kbd">{事件类型, 置信度, 位置点位, 时间戳, 证据切片(前5s+后5s), 抓拍图}</span>。置信度阈值、判定参数均支持分区配置与灰度发布。</p>
+
+  <h4>FR-2.1 异常行为识别</h4>
+  <table>
+    <tr><th style="width:140px">行为类型</th><th>判定规则（默认参数）</th><th style="width:200px">默认阈值</th><th style="width:200px">精度要求（实测集）</th></tr>
+    <tr><td>打架斗殴</td><td>≥2 人出现剧烈肢体冲突动作且持续 ≥3 秒</td><td>置信度 ≥0.85 触发；0.70–0.85 进入人工预筛队列</td><td>召回率 ≥90%，误报率 ≤5%</td></tr>
+    <tr><td>翻越围墙/围栏</td><td>人体跨越围墙警戒线且重心翻越动作完整</td><td>置信度 ≥0.80 触发</td><td>召回率 ≥92%，误报率 ≤3%</td></tr>
+    <tr><td>危险区域逗留</td><td>在水域/天台/配电房等电子围栏区域内停留超时</td><td>逗留时长 ≥120 秒触发（分区可调 60–600 秒）</td><td>召回率 ≥95%，误报率 ≤5%</td></tr>
+    <tr><td>跌倒/倒地不起</td><td>人体倒地且 ≥10 秒无显著位移</td><td>置信度 ≥0.85 触发</td><td>召回率 ≥90%，误报率 ≤8%</td></tr>
+    <tr><td>深夜异常活动</td><td>23:00–05:00 在教学区/空旷区域检测到人员活动</td><td>时段与区域白名单可配</td><td>检出率 ≥98%（依赖人形检测）</td></tr>
+  </table>
+
+  <h4>FR-2.2 危险物品识别</h4>
+  <table>
+    <tr><th style="width:140px">物品类型</th><th>判定规则</th><th style="width:200px">默认阈值</th><th style="width:200px">精度要求（实测集）</th></tr>
+    <tr><td>管制刀具/疑似器械</td><td>画面中检出刀形/棍棒状物且处于手持状态</td><td>置信度 ≥0.75 即触发（就低不就高）</td><td>召回率 ≥85%，误报率 ≤10%（人工复核兜底）</td></tr>
+    <tr><td>易燃易爆/可疑容器</td><td>检出汽油桶状容器、烟花爆竹等出现在非指定区域</td><td>置信度 ≥0.80 触发</td><td>召回率 ≥80%，误报率 ≤10%</td></tr>
+    <tr><td>明火/烟雾</td><td>画面检出火焰或烟雾特征</td><td>置信度 ≥0.80 触发，夜间灵敏度上调</td><td>召回率 ≥90%，误报率 ≤6%</td></tr>
+  </table>
+  <div class="callout warn"><b>原则：</b>危险物品类采取"宁误报、不漏报"策略，所有该类预警默认附带人工复核环节，未复核前不对学生采取任何结论性标注。</div>
+
+  <h4>FR-2.3 情绪异常识别（P1）</h4>
+  <table>
+    <tr><th style="width:120px">要素</th><th>内容</th></tr>
+    <tr><td>功能描述</td><td>在宿舍楼出入口、心理咨询室外围等限定区域，结合表情特征与行为特征（长时间独坐哭泣、情绪激烈）输出"情绪异常提示"，供班主任/心理教师关怀参考。</td></tr>
+    <tr><td>判定阈值</td><td>连续 2 日命中或单日内 3 次命中才生成提示；单人单日最多生成 1 条，避免骚扰。</td></tr>
+    <tr><td>精度与边界</td><td>该功能定位为辅助关怀线索，不作量化准确率考核指标；<b>严禁</b>作为纪律处分或评优评先依据，界面明示此边界。</td></tr>
+    <tr><td>异常处理</td><td>未签署知情同意学生不参与分析；结果仅对授权关怀角色可见，30 天后自动匿名化。</td></tr>
+  </table>
+
+  <h4>FR-2.4 聚集风险识别</h4>
+  <table>
+    <tr><th style="width:120px">要素</th><th>内容</th></tr>
+    <tr><td>功能描述</td><td>基于人头密度统计识别非计划性聚集，区分"正常集散（课间、放学）"与"异常聚集（围观、对峙）"，防止踩踏与冲突升级。</td></tr>
+    <tr><td>判定阈值</td><td>区域人数 ≥区域容量阈值（默认 30 人，分区可配）且持续 ≥60 秒；若同时检出对峙姿态或快速奔跑聚拢，直接升一级。</td></tr>
+    <tr><td>精度要求</td><td>人数估计误差 ≤15%（密度 &lt;2 人/㎡场景）。</td></tr>
+    <tr><td>异常处理</td><td>预设"白名单时段"（课间操、放学）自动抑制；大型活动可提前录入活动计划实现计划性豁免。</td></tr>
+  </table>
+
+  <h3>6.3 分级预警模块</h3>
+  <h4>FR-3.1 四级预警规则总表</h4>
+  <table>
+    <tr><th style="width:90px">级别</th><th>定义</th><th>典型触发条件</th><th>推送对象</th><th>推送渠道</th><th style="width:170px">响应时效要求</th></tr>
+    <tr><td><span class="tag t-blue">蓝色 IV</span></td><td>提示性线索</td><td>低置信度异常（0.70–0.85）、单人轻微异常、计划外但低风险事件</td><td>安保值班员</td><td>系统消息</td><td>30 分钟内确认；未确认自动归档为"未处置线索"供复盘</td></tr>
+    <tr><td><span class="tag t-yellow">黄色 III</span></td><td>一般风险</td><td>危险区域逗留超时、深夜异常活动、舆情敏感词命中、情绪异常提示</td><td>安保值班员 + 区域巡逻岗；涉生时抄送班主任</td><td>系统消息 + APP 推送</td><td>15 分钟内到场或远程确认</td></tr>
+    <tr><td><span class="tag t-orange">橙色 II</span></td><td>较大风险</td><td>打架斗殴高置信度、聚集升级、健康异常（心率）、连续缺勤+情绪复合风险</td><td>安保负责人 + 值班校领导 + 涉事班主任；健康类同时推送校医</td><td>APP 强提醒 + 短信</td><td>5 分钟内响应、10 分钟内到场</td></tr>
+    <tr><td><span class="tag t-red">红色 I</span></td><td>重大紧急</td><td>一键报警触发、持械疑似、明火烟雾、多人斗殴、翻越围墙入校（外来入侵）</td><td>安全主管 + 全体安保 + 值班校领导 + 校长（可选）；按预案一键外呼 110/120</td><td>电话直呼 + 短信 + APP + 大屏声光报警</td><td>立即响应、3 分钟内首批人员到场</td></tr>
+  </table>
+  <h4>FR-3.2 推送与升级规则</h4>
+  <ul>
+    <li><b>事件去重聚合：</b>同一点位 60 秒内同类事件合并为 1 条预警并累加证据，避免轰炸式推送。</li>
+    <li><b>限时升级：</b>黄色 15 分钟未确认 → 自动升橙色；橙色 10 分钟未到场 → 升红色并电话直呼值班领导。</li>
+    <li><b>降级与解除：</b>值班员确认误报可降级至蓝色并归档；事件消失（如人群散去）可手动解除，均须填写原因并留痕。</li>
+    <li><b>免打扰：</b>蓝色预警 23:00–06:00 仅系统消息不震动；橙色及以上不受免打扰限制。</li>
+    <li><b>推送失败兜底：</b>APP 推送 30 秒未送达自动转短信；红色预警短信未回执自动转电话语音。</li>
+  </ul>
+  <h4>FR-3.3 输入输出与异常</h4>
+  <ul>
+    <li>输入：AI 事件候选、门禁/报警/穿戴/舆情事件、人工上报；输出：带级别、对象、渠道、时效要求的预警实例。</li>
+    <li>异常：规则引擎自身故障时，AI 事件直接按"橙色"保底策略推送安保负责人，确保故障期间不失守；规则配置错误可一键回滚至上一发布版本。</li>
+  </ul>
+
+  <h3>6.4 干预处置模块</h3>
+  <h4>FR-4.1 预警工单派发</h4>
+  <table>
+    <tr><th style="width:120px">要素</th><th>内容</th></tr>
+    <tr><td>功能描述</td><td>黄色及以上预警自动生成工单；按"就近+在岗+负载"三原则自动派单，支持值班员手动改派与多人协同。</td></tr>
+    <tr><td>操作流程</td><td><div class="flow"><span class="step">预警生成</span><span class="arr">→</span><span class="step">自动派单（最近 1 名巡逻岗）</span><span class="arr">→</span><span class="step">接单确认（30 秒未接转派下一顺位）</span><span class="arr">→</span><span class="step">到场签到（GPS/扫码）</span><span class="arr">→</span><span class="step">处置执行</span></div></td></tr>
+    <tr><td>输入输出</td><td>输入：预警实例、安保排班表、实时位置；输出：工单（编号、级别、地点、证据、处置人、时限）。</td></tr>
+    <tr><td>异常处理</td><td>全员无应答 → 升级至安保负责人电话直呼；位置不可用时按固定巡逻路线派单；工单支持 1 次免费改派，二次改派需值班领导确认。</td></tr>
+  </table>
+  <h4>FR-4.2 处置流程跟踪</h4>
+  <table>
+    <tr><th style="width:120px">要素</th><th>内容</th></tr>
+    <tr><td>功能描述</td><td>工单状态机：<span class="kbd">待接单→处置中→待复核→已闭环</span>（可分支：误报终止、升级中）。每个状态变更记录时间戳与操作人，大屏实时展示超时工单。</td></tr>
+    <tr><td>输入输出</td><td>输入：处置人 APP 操作、现场照片/文字；输出：状态时间线、超时提醒（处置中超 30 分钟提醒值班领导）。</td></tr>
+    <tr><td>异常处理</td><td>处置人离线超 5 分钟自动提醒并允许接管；照片上传失败本地暂存，恢复后自动续传。</td></tr>
+  </table>
+  <h4>FR-4.3 多方协同调度</h4>
+  <table>
+    <tr><th style="width:120px">要素</th><th>内容</th></tr>
+    <tr><td>功能描述</td><td>橙色及以上工单自动创建协同空间：按需拉入班主任、校医、心理教师、值班领导；内置事件简报、语音通话、位置共享、预案清单勾选。</td></tr>
+    <tr><td>输入输出</td><td>输入：工单角色映射表；输出：协同记录（发言、共享文件、预案执行勾选）全部归档。</td></tr>
+    <tr><td>异常处理</td><td>非工单关联人员不可加入；家长不在协同空间内，仅接收结构化通知。</td></tr>
+  </table>
+  <h4>FR-4.4 处置结果闭环归档</h4>
+  <table>
+    <tr><th style="width:120px">要素</th><th>内容</th></tr>
+    <tr><td>功能描述</td><td>处置完成后值班领导复核闭环；归档包包含：事件证据切片、工单时间线、处置记录、协同记录、通知回执。支持按事件导出 PDF 报告用于家校沟通与上级报送。</td></tr>
+    <tr><td>输入输出</td><td>输入：复核结论（闭环/退回补充）；输出：归档事件包、闭环率统计。</td></tr>
+    <tr><td>异常处理</td><td>退回补充的工单 24 小时未重新提交自动升级提醒；归档数据保存期限：事件数据 ≥3 年，敏感个人数据按最小必要期限执行（见 7.4）。</td></tr>
+  </table>
+
+  <h3>6.5 数据统计分析模块</h3>
+  <h4>FR-5.1 校园安全态势可视化大屏</h4>
+  <ul>
+    <li>内容：实时预警流、校园地图事件点位热力、今日事件类型分布、待处置工单与超时警示、设备在线率、AI 分析路数与延迟。</li>
+    <li>刷新：预警流实时（WebSocket 推送 ≤2 秒），统计数据 60 秒刷新；大屏支持 1920×1080 与 3840×2160。</li>
+    <li>交互：点击事件点位弹出证据切片与工单；红色预警自动全屏置顶并声光提示（可一键静音）。</li>
+  </ul>
+  <h4>FR-5.2 多维度安全报表</h4>
+  <ul>
+    <li>内置日报/周报/月报模板，维度：事件类型、区域、时段、级别、处置时效、误报率、涉及年级。</li>
+    <li>支持自定义筛选与导出（Excel/PDF）；月报包含同比/环比与 TOP 风险区域分析，自动生成改进建议草稿。</li>
+    <li>报表中涉及学生的信息默认脱敏（学号哈希、姓名隐去），授权角色可申请查看明文，审批留痕。</li>
+  </ul>
+  <h4>FR-5.3 风险趋势预测分析（P1）</h4>
+  <ul>
+    <li>基于历史事件时序数据预测未来 7 天高风险时段与区域，输出布防建议（如"周五 12:00–13:00 食堂东门建议增派 1 人"）。</li>
+    <li>对重点关怀学生输出风险等级周度变化曲线，支持班主任订阅。</li>
+    <li>预测结果标注置信区间，仅作调度参考，不作为对学生的任何结论性评价。</li>
+  </ul>
+
+  <h3>6.6 系统管理模块</h3>
+  <h4>FR-6.1 用户与权限管理</h4>
+  <ul>
+    <li>RBAC 模型：预置角色=安全主管、安保值班员、巡逻岗、班主任、校医、心理教师、运维、审计员；支持自定义角色。</li>
+    <li>数据权限最小化：班主任仅本班学生相关事件；校医/心理教师仅健康/心理域；家长无系统账号，仅接收通知。</li>
+    <li>敏感操作（查看明文、导出、改阈值）强制二次认证并记审计日志；账号支持与企业微信/钉钉扫码或账号密码登录，90 天强制改密。</li>
+  </ul>
+  <h4>FR-6.2 设备管理</h4>
+  <ul>
+    <li>设备台账：摄像头、报警装置、手环网关、服务器的型号、位置、维保信息、在线状态统一管理。</li>
+    <li>在线率统计与离线自动工单；支持批量导入（模板校验，错误行明示原因整批不入库）。</li>
+  </ul>
+  <h4>FR-6.3 算法模型与阈值配置</h4>
+  <ul>
+    <li>按区域配置算法开关与阈值；变更须"测试通道验证 → 灰度发布 → 全量"三步，全程留痕可一键回滚。</li>
+    <li>误报样本回流库：值班员标注的误报自动进入样本库，月度导出供算法迭代。</li>
+    <li>展示各算法实时运行指标（分析路数、单路延迟、当日误报率），指标异常自动告警运维。</li>
+  </ul>
+  <h4>FR-6.4 日志审计</h4>
+  <ul>
+    <li>记录登录、查询、导出、配置变更、敏感数据访问五类日志，含操作人、时间、IP、对象、结果。</li>
+    <li>日志不可由业务管理员删除，保存 ≥180 天（操作日志）与 ≥3 年（审计日志），支持按季度导出审计报告。</li>
+  </ul>
+</section>
+
+<!-- ============ 7 非功能性需求 ============ -->
+<section id="s7">
+  <h2 class="sec">7. 非功能性需求</h2>
+  <h3>7.1 性能指标</h3>
+  <table>
+    <tr><th style="width:220px">指标项</th><th>要求值</th></tr>
+    <tr><td>预警端到端延迟（事件发生→推送发出）</td><td>≤5 秒（P95）</td></tr>
+    <tr><td>大屏/工作站实时画面加载</td><td>首屏 ≤3 秒，单路视频打开 ≤2 秒</td></tr>
+    <tr><td>PC 端常规页面响应</td><td>≤2 秒（P95）；报表导出（1 万行内）≤10 秒</td></tr>
+    <tr><td>AI 视频分析能力</td><td>单节点 ≥32 路 1080p 实时分析；集群按接入路数线性扩展</td></tr>
+    <tr><td>并发用户</td><td>同时在线 ≥500 用户，峰值预警推送 ≥100 条/分钟不丢消息</td></tr>
+    <tr><td>消息送达率</td><td>APP/短信综合送达率 ≥99.5%，红色预警电话直呼接通重试 ≥3 次</td></tr>
+  </table>
+  <h3>7.2 AI 识别质量指标</h3>
+  <table>
+    <tr><th>场景</th><th>召回率</th><th>误报率</th><th>考核方式</th></tr>
+    <tr><td>打架斗殴</td><td>≥90%</td><td>≤5%</td><td>验收实测集（≥500 样本）+ 试运行 30 天线上统计</td></tr>
+    <tr><td>翻越围墙</td><td>≥92%</td><td>≤3%</td><td>同上</td></tr>
+    <tr><td>危险区域逗留</td><td>≥95%</td><td>≤5%</td><td>同上</td></tr>
+    <tr><td>管制刀具/危险物品</td><td>≥85%</td><td>≤10%（人工复核兜底）</td><td>同上</td></tr>
+    <tr><td>明火烟雾</td><td>≥90%</td><td>≤6%</td><td>同上</td></tr>
+    <tr><td>聚集人数估计误差</td><td colspan="2">≤15%（密度 &lt;2 人/㎡）</td><td>抽样点位人工计数对比</td></tr>
+  </table>
+  <h3>7.3 可用性与可靠性</h3>
+  <ul>
+    <li>全年系统可用率 ≥99.9%（年累计不可用 ≤8.76 小时）；核心预警链路（接入→分析→推送）7×24 不间断，单点故障自动切换 ≤60 秒。</li>
+    <li>视频与证据存储：事件切片 ≥3 年，原始流按校园监控既有规定 ≥90 天；存储双副本，RPO ≤5 分钟，RTO ≤2 小时。</li>
+    <li>断网降级：外网中断时本地预警与工单功能可用，恢复后自动补传。</li>
+  </ul>
+  <h3>7.4 数据安全与隐私合规</h3>
+  <ul>
+    <li>遵循《个人信息保护法》《未成年人保护法》《数据安全法》及教育行业数据安全相关规范；涉及学生人脸、健康、心理数据按敏感个人信息最高等级保护。</li>
+    <li>传输 TLS 1.3，存储 AES-256 加密；密钥独立管理，按季度轮换。</li>
+    <li>最小化授权与脱敏默认：业务界面默认脱敏，明文查看需审批并留痕；敏感数据访问全部审计。</li>
+    <li>知情同意：穿戴监测与情绪分析须取得监护人书面知情同意后方可启用，支持随时退出且退出即停采。</li>
+    <li>数据本地化：全部数据存储于校内/国内合规机房，不出境；第三方短信/推送通道仅传输去标识化内容。</li>
+    <li>留存与销毁：关怀类敏感数据按最小必要期限保存，到期自动匿名化或销毁并出具记录。</li>
+  </ul>
+  <h3>7.5 终端兼容性</h3>
+  <table>
+    <tr><th style="width:200px">终端</th><th>兼容要求</th></tr>
+    <tr><td>态势大屏</td><td>1920×1080、2560×1440、3840×2160；Chrome/Edge 最新两个大版本</td></tr>
+    <tr><td>PC 管理端/运维端</td><td>Chrome、Edge、Firefox 最新两个大版本；最低分辨率 1366×768</td></tr>
+    <tr><td>移动 APP</td><td>Android 10 及以上、iOS 15 及以上；主流机型适配（华为/小米/OPPO/vivo/iPhone）</td></tr>
+    <tr><td>微信服务号（家长）</td><td>H5 页面适配 iOS/Android 微信内置浏览器</td></tr>
+  </table>
+</section>
+
+<!-- ============ 8 交互原型说明 ============ -->
+<section id="s8">
+  <h2 class="sec">8. 交互原型说明</h2>
+  <p>本期交付高保真交互原型（Figma/即时设计），覆盖以下核心页面；原型中标注的交互逻辑与本章描述不一致时，以本 PRD 文字规则为准。</p>
+  <table>
+    <tr><th style="width:200px">页面</th><th>核心交互逻辑</th><th>体验要求</th></tr>
+    <tr><td>态势大屏</td><td>默认全屏值守态；红色预警自动置顶+声光；点击点位→右侧滑出事件详情与工单；支持"演练模式"全局开关</td><td>3 秒内可定位任意告警来源；深色底减少值守视觉疲劳</td></tr>
+    <tr><td>预警工作台（安保）</td><td>左：预警列表（按级别+时间排序，未确认置顶）；中：证据切片自动播放；右：一键操作区（确认/误报/派单/升级）</td><td>单预警处理操作 ≤3 步；键盘快捷键支持（确认 Enter、误报 Esc→选因）</td></tr>
+    <tr><td>移动工单（APP）</td><td>工单卡片含导航、到场签到、处置表单（结果选项化+照片）、协同入口；弱网状态本地暂存并显著提示</td><td>处置表单填写 ≤60 秒完成；关键按钮单手可触达</td></tr>
+    <tr><td>班主任关怀页</td><td>本班风险学生列表（仅风险等级与建议，无原始敏感数据）；点击学生→时间线视图（事件+干预记录）</td><td>明示数据边界提示语；禁止截屏分享（水印+脱敏）</td></tr>
+    <tr><td>家长通知（服务号 H5）</td><td>结构化卡片：事件概述→孩子状态→处置进展→联系入口；不含其他学生信息</td><td>措辞经校方法务审核模板化，避免引发恐慌</td></tr>
+    <tr><td>阈值配置页（运维）</td><td>区域树 + 算法卡片；修改即提示"需灰度发布"；版本历史可 diff 与回滚</td><td>危险操作二次确认+变更说明必填</td></tr>
+  </table>
+</section>
+
+<!-- ============ 9 验收标准 ============ -->
+<section id="s9">
+  <h2 class="sec">9. 验收标准（可量化通过条件）</h2>
+  <table>
+    <tr><th style="width:170px">模块</th><th>验收通过条件</th><th style="width:180px">验证方式</th></tr>
+    <tr><td>多源数据接入</td><td>协议清单内设备 100% 可接入；视频流离线 10 分钟内自动产生维修工单；门禁同步延迟 ≤1 分钟；连续 7 天接入成功率 ≥99%</td><td>现场接入实测 + 日志统计</td></tr>
+    <tr><td>AI 智能分析</td><td>7.2 节全部场景在验收实测集（每类 ≥500 样本，含夜间/雨天/遮挡子集）达到召回率与误报率指标；阈值分区配置生效且可回滚</td><td>第三方/校方联合实测集评测</td></tr>
+    <tr><td>分级预警</td><td>四级预警触发准确率 100%（规则符合 6.3 总表）；端到端延迟 ≤5 秒（P95）；限时升级、推送降级兜底全链路演练通过；推送送达率 ≥99.5%</td><td>脚本化场景演练 + 通道回执统计</td></tr>
+    <tr><td>干预处置</td><td>黄色及以上 100% 自动成单；30 秒未接单自动转派；闭环归档包字段完整率 100%；试运行 30 天闭环率 100%</td><td>工单抽样审计 + 状态机遍历测试</td></tr>
+    <tr><td>数据统计分析</td><td>大屏 6 类核心指标齐全且实时刷新达标；月报自动生成且与人工抽查数据误差 =0；报表默认脱敏 100% 覆盖</td><td>界面走查 + 数据比对</td></tr>
+    <tr><td>系统管理</td><td>越权访问测试用例 100% 被拦截并记录；敏感操作二次认证 100% 触发；阈值灰度→全量→回滚演练成功；审计日志完整率 100%</td><td>安全渗透用例 + 审计抽查</td></tr>
+    <tr><td>非功能</td><td>500 并发压测达标；故障切换 ≤60 秒演练通过；试运行 30 天可用率 ≥99.9%；合规检查清单（知情同意、加密、审计、留存）逐项通过</td><td>压测报告 + 演练记录 + 合规审查</td></tr>
+  </table>
+  <div class="callout">验收分两步：<b>出厂验收（FAT）</b>——实测集与功能用例全通过；<b>上线试运行验收（SAT）</b>——试运行 30 天，以线上真实统计复核指标，通过后签署终验报告。</div>
+</section>
+
+<!-- ============ 10 项目排期与资源需求 ============ -->
+<section id="s10">
+  <h2 class="sec">10. 项目排期与资源需求</h2>
+  <h3>10.1 阶段与交付节点（总周期约 18 周，T0=立项通过日）</h3>
+  <table>
+    <tr><th style="width:150px">阶段</th><th style="width:130px">周期</th><th>关键交付物</th><th style="width:200px">里程碑/出口标准</th></tr>
+    <tr><td>M1 需求与原型</td><td>W1–W2</td><td>PRD 定稿、高保真原型、数据接入清单与协议确认、知情同意文书模板</td><td>需求评审会签字通过</td></tr>
+    <tr><td>M2 平台基础与数据接入</td><td>W3–W8</td><td>基础平台（认证/RBAC/消息网关）、三类 P0 数据源接入、设备台账</td><td>接入联调通过率 100%</td></tr>
+    <tr><td>M3 AI 算法训练与联调</td><td>W6–W12（并行）</td><td>五类 P0 算法校内场景微调、实测集构建、阈值默认值标定</td><td>算法自测达到 7.2 指标</td></tr>
+    <tr><td>M4 预警处置与终端</td><td>W9–W14（并行）</td><td>预警引擎、工单闭环、大屏、APP、服务号通知</td><td>端到端场景演练通过</td></tr>
+    <tr><td>M5 试运行与验收</td><td>W15–W18</td><td>FAT 报告、30 天试运行数据、SAT 终验报告、运维手册与培训材料</td><td>SAT 通过、移交运维</td></tr>
+  </table>
+  <h3>10.2 人员配置需求</h3>
+  <table>
+    <tr><th>角色</th><th style="width:110px">人数</th><th>投入阶段</th><th>职责要点</th></tr>
+    <tr><td>产品经理</td><td>1</td><td>全程</td><td>需求管理、原型、验收组织、家校沟通文案合规</td></tr>
+    <tr><td>后端工程师</td><td>3</td><td>W3–W18</td><td>平台、接入、预警引擎、工单、报表</td></tr>
+    <tr><td>前端工程师</td><td>2</td><td>W6–W16</td><td>大屏、PC 端、运维端</td></tr>
+    <tr><td>移动端工程师</td><td>1</td><td>W9–W16</td><td>APP 与服务号 H5</td></tr>
+    <tr><td>算法工程师</td><td>2</td><td>W3–W16</td><td>场景微调、实测集、阈值标定、误报迭代</td></tr>
+    <tr><td>测试工程师</td><td>2</td><td>W8–W18</td><td>功能/性能/安全测试，FAT/SAT 执行</td></tr>
+    <tr><td>运维工程师</td><td>1</td><td>W10–W18（之后常驻）</td><td>部署、监控、故障预案、移交</td></tr>
+    <tr><td>校方对接人</td><td>保卫处/信息中心/学工各 1</td><td>全程（兼职）</td><td>业务确认、试运行组织、合规审查</td></tr>
+  </table>
+  <h3>10.3 其他资源</h3>
+  <ul>
+    <li>算力：AI 推理服务器（GPU）按接入路数配置，首期建议支持 ≥128 路并发分析并可横向扩展。</li>
+    <li>数据：校内标注场景样本采集（含夜间/雨天），需保卫处配合组织安全演练拍摄。</li>
+    <li>第三方服务：短信通道、语音外呼通道、地图服务（校园 indoor 底图绘制）。</li>
+  </ul>
+</section>
+
+<!-- ============ 11 风险评估与应对方案 ============ -->
+<section id="s11">
+  <h2 class="sec">11. 风险评估与应对方案</h2>
+  <table>
+    <tr><th style="width:130px">风险类别</th><th>风险描述</th><th style="width:60px">等级</th><th>应对方案</th></tr>
+    <tr><td rowspan="3">技术风险</td><td>校内场景（校服统一、光照复杂、遮挡多）导致 AI 误报率高于预期，引发"狼来了"效应</td><td><span class="tag t-red">高</span></td><td>M1 即启动校内样本采集与实测集构建；分区阈值+灰度调优机制；误报样本月度回流迭代；蓝色预警降噪策略保护用户信任</td></tr>
+    <tr><td>存量摄像头协议老旧、码流不达标，部分点位无法实时分析</td><td><span class="tag t-yellow">中</span></td><td>W1 完成设备普查并输出《可接入性清单》；不达标点位降级为仅录像并列入硬件改造建议，不阻塞软件主线</td></tr>
+    <tr><td>高峰期预警风暴（如运动会）超出推送与处置承载</td><td><span class="tag t-yellow">中</span></td><td>事件聚合去重、活动计划性豁免、预警风暴时自动进入"批量确认"模式</td></tr>
+    <tr><td rowspan="3">数据合规风险</td><td>学生人脸/健康/心理属敏感个人信息，采集与使用不合规将面临法律与舆情风险</td><td><span class="tag t-red">高</span></td><td>上线前完成个人信息保护影响评估（PIA）；监护人书面知情同意；默认脱敏+最小授权+全量审计；法务参与通知话术与数据留存期限审查</td></tr>
+    <tr><td>情绪识别被误用为学生评价依据，引发家校争议</td><td><span class="tag t-orange">中高</span></td><td>产品层明示用途边界并技术隔离（不出现在任何评价/处分流程）；访问权限最小化；对班主任开展使用规范培训</td></tr>
+    <tr><td>第三方推送/短信通道泄露学生信息</td><td><span class="tag t-yellow">中</span></td><td>通道内容去标识化（仅事件级别与时间，不含姓名细节）；与供应商签署数据处理协议（DPA）</td></tr>
+    <tr><td rowspan="3">落地推广风险</td><td>安保与班主任对系统不熟，预警确认不及时导致机制空转</td><td><span class="tag t-orange">中高</span></td><td>W14 完成分角色培训与考核；上线首月驻场陪跑；操作 ≤3 步的极简交互；处置时效纳入保卫处日常考核制度</td></tr>
+    <tr><td>家长对"被监控"产生抵触，尤其穿戴与情绪功能</td><td><span class="tag t-yellow">中</span></td><td>敏感功能默认关闭、自愿开通；家长会宣讲材料与 FAQ 前置准备；提供退出即停采的明确承诺</td></tr>
+    <tr><td>多部门协同责任不清，工单处置推诿</td><td><span class="tag t-yellow">中</span></td><td>上线前由校方发布《预警处置责任矩阵》（角色×级别×时限），系统按矩阵固化流程与升级规则</td></tr>
+  </table>
+</section>
+
+<!-- ============ 12 附录 ============ -->
+<section id="s12">
+  <h2 class="sec">12. 附录：术语与共享规则</h2>
+  <h3>12.1 术语表</h3>
+  <table>
+    <tr><th style="width:180px">术语</th><th>定义</th></tr>
+    <tr><td>事件候选</td><td>AI 感知层输出的未分级原始安全信号，含类型、置信度、证据</td></tr>
+    <tr><td>预警实例</td><td>经预警引擎分级、聚合后生成的待响应对象，带级别与时效要求</td></tr>
+    <tr><td>工单</td><td>黄色及以上预警生成的处置任务，状态机：待接单→处置中→待复核→已闭环</td></tr>
+    <tr><td>关怀档案</td><td>重点学生的风险等级与干预记录集合，高敏权限控制</td></tr>
+    <tr><td>FAT / SAT</td><td>出厂验收 / 上线试运行验收</td></tr>
+  </table>
+  <h3>12.2 共享规则（全系统唯一口径）</h3>
+  <ul>
+    <li><b>事件 ID：</b>全链路唯一，格式 <span class="kbd">EVT-日期-序列</span>，预警、工单、归档均引用同一 ID。</li>
+    <li><b>时间口径：</b>系统内统一 UTC+8 本地时间展示，存储统一 UTC；所有时效统计以系统服务端时间戳为准。</li>
+    <li><b>脱敏规则：</b>默认脱敏=姓名隐去中间字、学号哈希、人脸马赛克；明文查看=申请+审批+审计。</li>
+    <li><b>误报标注：</b>任何角色标记误报必须选择原因分类（环境/算法/设备/人为），该标注是算法迭代的唯一输入口径。</li>
+  </ul>
+  <h3>12.3 待确认事项（Open Questions）</h3>
+  <table>
+    <tr><th style="width:60px">编号</th><th>事项</th><th style="width:200px">决策方 / 期望时间</th></tr>
+    <tr><td>Q1</td><td>[TBD] 接入摄像头与报警装置的准确数量、型号与协议普查结果</td><td>信息中心，W1 结束前</td></tr>
+    <tr><td>Q2</td><td>[TBD] 门禁厂商平台开放接口能力（是否支持实时推送）</td><td>信息中心 + 门禁厂商，W2 结束前</td></tr>
+    <tr><td>Q3</td><td>[TBD] 智能穿戴手环的采购品牌与数据开放协议（影响 P1 排期）</td><td>采购部门，W4 结束前</td></tr>
+    <tr><td>Q4</td><td>[TBD] 短信/语音外呼通道的预算额度与供应商选定</td><td>财务 + 信息中心，W6 结束前</td></tr>
+    <tr><td>Q5</td><td>[假设，TBD] 红色预警是否直通 110 一键外呼，需校方与属地派出所确认联动机制</td><td>保卫处，M4 开始前</td></tr>
+  </table>
+</section>
+
+<footer>校园安全AI预警与干预系统 PRD V1.0 · 2026-11-03 · 本文档经立项评审通过后生效，变更须升版管理</footer>
+</div>
+</body>
+</html>
