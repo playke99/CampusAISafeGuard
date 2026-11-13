@@ -10,7 +10,7 @@ DEFAULTS = {
     "camera_id": "lib-cam-01",
     "zone_prefix": "图书馆自习区",
     # ── 模型 ──
-    "pose_weights": "../../1.数据采集/YOLO26测试/yolo26n-pose.pt",
+    "pose_weights": "",                 # 姿态权重(人+关键点), 留空则降级用检测权重
     "detect_weights": "weights/yolo26n.pt",   # 物品检测(COCO), 不存在则自动降级
     "conf": 0.35,
     # ── 占座判定阈值 ──
